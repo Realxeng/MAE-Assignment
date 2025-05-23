@@ -11,7 +11,7 @@ class Login extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('Nab', style: TextStyle(fontSize: 20)),
+            Text('Login to your Nab account', style: TextStyle(fontSize: 20)),
             SizedBox(height: 20),
             TextField(decoration: InputDecoration(labelText: 'Email')),
             TextField(

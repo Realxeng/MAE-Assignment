@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Nab',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Color(0x00AFFF)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color(0x00AFFFFF)),
       ),
       home: Login(),
     );
