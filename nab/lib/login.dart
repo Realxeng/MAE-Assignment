@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // ignore: unused_import
-import 'package:nab/customer/cus_home_page.dart';
+import 'cus_home_page.dart';
 
 class Login extends StatelessWidget {
   @override
