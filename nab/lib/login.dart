@@ -16,12 +16,12 @@ class Login extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontFamily: 'Arial'),
             ),
             SizedBox(height: 20),
-            Container(
+            SizedBox(
               width: screenWidth * 0.8, // 80% of the screen width
               child: TextField(decoration: InputDecoration(labelText: 'Email')),
             ),
             SizedBox(height: 16), // Add spacing between fields
-            Container(
+            SizedBox(
               width: screenWidth * 0.8, // 80% of the screen width
               child: TextField(
                 decoration: InputDecoration(labelText: 'Password'),
