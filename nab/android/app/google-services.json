@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "213607786934",
+    "project_id": "mae-assignment-a1b2d",
+    "storage_bucket": "mae-assignment-a1b2d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:213607786934:android:af5c59f60f7f3419b17917",
+        "android_client_info": {
+          "package_name": "com.nabrental.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8BRJVSOiPryVq1lcGd6avOSWbGWKBlfY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
