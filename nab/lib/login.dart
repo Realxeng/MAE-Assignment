@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'utils/auth_wrapper.dart';
 
 class Login extends StatelessWidget {
   @override
