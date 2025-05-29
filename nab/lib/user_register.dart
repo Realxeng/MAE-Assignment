@@ -1,3 +1,5 @@
+import 'dart:developer';
+import 'package:nab/utils/auth_wrapper.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -8,197 +10,211 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  // Controllers for each field
-  final TextEditingController _fullNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _dobController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final Color mainGrey = Color(0xFFD9D9D9);
+  final Color darkGrey = Color(0xFF9A9A9A);
+  String? _dobString;
+  DateTime? _dob;
 
-  // Form key for validation
-  final _formKey = GlobalKey<FormState>();
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
+
+  final List<String> _placeholders = [
+    "Full Name",
+    "Email",
+    "Date of Birth",
+    "township",
+    "Username",
+    "Password",
+  ];
+
+  int _focusedField = -1; // -1 means none is focused
 
   @override
   void dispose() {
-    _fullNameController.dispose();
-    _emailController.dispose();
-    _dobController.dispose();
-    _locationController.dispose();
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      String fullName = _fullNameController.text;
-      String email = _emailController.text;
-      String dob = _dobController.text;
-      String location = _locationController.text;
-      String username = _usernameController.text;
-      String password = _passwordController.text;
-      print('Full Name: $fullName');
-      print('Email: $email');
-      print('Date of Birth: $dob');
-      print('Location: $location');
-      print('Username: $username');
-      print('Password: $password');
-      // Add navigation to next screen or further logic here
+    for (final c in _controllers) {
+      c.dispose();
     }
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Register Icon
-            Icon(Icons.directions_car, size: 80, color: Colors.blue),
-            SizedBox(height: 20),
-            Text(
-              'Register',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 30),
-            // Form
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _fullNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Full Name',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your full name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!RegExp(
-                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                      ).hasMatch(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  TextFormField(
-                    controller: _dobController,
-                    decoration: InputDecoration(
-                      labelText: 'Date of Birth',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.datetime,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your date of birth';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  TextFormField(
-                    controller: _locationController,
-                    decoration: InputDecoration(
-                      labelText: 'Location',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your location';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  TextFormField(
-                    controller: _usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a username';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 10),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                    ),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 30),
-            // Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Add back navigation logic here
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[400],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                SizedBox(height: 30),
+                Image.asset('assets/Nab_Emblem.png', height: 100),
+                SizedBox(height: 10),
+                Text(
+                  "Register",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[700],
+                    fontFamily: 'Poppins',
                   ),
-                  child: Text('BACK'),
                 ),
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[600],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                SizedBox(height: 26),
+
+                ...List.generate(_placeholders.length, (i) => _buildInput(i)),
+
+                SizedBox(height: 40),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      _bottomButton("BACK", false, _onBackPressed),
+                      Spacer(),
+                      _navDots(3, 2),
+                      Spacer(),
+                      _bottomButton("NEXT", true, _onNextPressed),
+                    ],
                   ),
-                  child: Text('NEXT'),
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildInput(int index) {
+    final isFocused = index == _focusedField;
+    bool isDobField = _placeholders[index] == "Date of Birth";
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: isFocused ? darkGrey : mainGrey,
+          borderRadius: BorderRadius.circular(25),
+        ),
+        child: Center(
+          child: TextField(
+            controller:
+                isDobField
+                    ? TextEditingController(text: _dobString)
+                    : _controllers[index],
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isFocused ? Colors.white : Colors.grey[700],
+              fontSize: 18,
+            ),
+            cursorColor: Colors.blue,
+            obscureText: _placeholders[index] == "Password",
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 20),
+              border: InputBorder.none,
+              hintText: _placeholders[index],
+              hintStyle: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isFocused ? Colors.white70 : Colors.grey[700],
+                fontSize: 18,
+              ),
+            ),
+            readOnly: isDobField,
+            onTap:
+                isDobField
+                    ? () async {
+                      setState(() {
+                        _focusedField = index;
+                      });
+                      DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: _dob ?? DateTime(2000, 1, 1),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          _dob = picked;
+                          _dobString =
+                              "${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                        });
+                      }
+                    }
+                    : () {
+                      setState(() {
+                        _focusedField = index;
+                      });
+                    },
+            onChanged:
+                isDobField
+                    ? null
+                    : (_) {
+                      setState(() {});
+                    },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bottomButton(String text, bool isActive, VoidCallback onPressed) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: onPressed,
+      child: Container(
+        width: 100,
+        height: 42,
+        decoration: BoxDecoration(
+          color: isActive ? Color(0xFFB3B3B3) : Color(0xFFD9D9D9),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isActive ? Colors.white : Colors.grey[600],
+              fontSize: 17,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _navDots(int total, int activeIdx) {
+    List<Widget> dots = [];
+    for (int i = 0; i < total; i++) {
+      dots.add(
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 4),
+          width: 12,
+          height: 6,
+          decoration: BoxDecoration(
+            color: i == activeIdx ? Colors.grey[700] : Color(0xFFE0E0E0),
+            borderRadius: BorderRadius.circular(6),
+          ),
+        ),
+      );
+    }
+    return Row(children: dots);
+  }
+
+  void _onNextPressed() {
+    AuthWrapper authWrapper = AuthWrapper();
+    _controllers[2].text = _dobString ?? '';
+    try{
+      authWrapper.signUp(_controllers);
+    }
+    catch (e) {
+      log('Error during sign up: $e');
+    }
+  }
+
+  void _onBackPressed() {
+    // Handle the back button press
+    // You can add your logic here, such as navigating to the previous screen
   }
 }
