@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'cus_home_page.dart';
 
 class Login extends StatelessWidget {
-  const Login({super.key});
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;

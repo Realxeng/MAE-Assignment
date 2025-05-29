@@ -42,29 +42,32 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyBBVEvvi7MALQeN9JxoGbiujaD-fAcrM18',
-    appId: '1:213607786934:web:2941c876d38c4bf6b17917',
+    appId: '1:213607786934:web:7dbdfe9afc0b03d9b17917',
     messagingSenderId: '213607786934',
     projectId: 'mae-assignment-a1b2d',
     authDomain: 'mae-assignment-a1b2d.firebaseapp.com',
+    databaseURL: 'https://mae-assignment-a1b2d-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'mae-assignment-a1b2d.firebasestorage.app',
-    measurementId: 'G-5EFVDWF290',
+    measurementId: 'G-YG6HZGYX6R',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyB8BRJVSOiPryVq1lcGd6avOSWbGWKBlfY',
-    appId: '1:213607786934:android:af5c59f60f7f3419b17917',
+    appId: '1:213607786934:android:f8975fb43917c79cb17917',
     messagingSenderId: '213607786934',
     projectId: 'mae-assignment-a1b2d',
+    databaseURL: 'https://mae-assignment-a1b2d-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'mae-assignment-a1b2d.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAaXTOlA5CZFovklopK6zMzEOw9ZgL-1Ew',
-    appId: '1:213607786934:ios:dc13e0dd1f9fc277b17917',
+    appId: '1:213607786934:ios:adb077ff1f907f2eb17917',
     messagingSenderId: '213607786934',
     projectId: 'mae-assignment-a1b2d',
+    databaseURL: 'https://mae-assignment-a1b2d-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'mae-assignment-a1b2d.firebasestorage.app',
-    iosBundleId: 'com.example.nab',
+    iosBundleId: 'com.nabrental.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
