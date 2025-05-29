@@ -1,4 +1,4 @@
-package com.example.nab
+package com.nabrental.app
 
 import io.flutter.embedding.android.FlutterActivity
 
