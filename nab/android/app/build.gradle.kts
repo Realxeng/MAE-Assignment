@@ -40,6 +40,10 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    dependencies {
+        implementation("androidx.core:core-splashscreen:1.0.0")
+    }
 }
 
 flutter {
