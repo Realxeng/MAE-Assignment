@@ -55,7 +55,20 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/Nab_Icon2.png"
+  image_path: "assets/Nab_Icon_Nobg.png"
+  adaptive_icon_background: "#f7f7f7"
+  adaptive_icon_foreground_inset: 0
+
+flutter_native_splash:
+  color: "#f7f7f7"
+  image: assets/Nab_Icon_Nobg.png
+  branding: assets/Nab_Branding.png
+  android: true
+  ios: true
+  android_12:
+    color: "#f7f7f7"
+    image: assets/Nab_Splash_Android.png
+    branding: assets/Nab_Branding_Android.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -75,6 +88,10 @@ flutter:
     - assets/Nab_Emblem.png
     - assets/Nab_Logo.png
     - assets/Nab_Logo2.png
+    - assets/Nab_Icon_Nobg.png
+    - assets/Nab_Branding.png
+    - assets/Nab_Splash_Android.png
+    - assets/Nab_Branding_Android.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
