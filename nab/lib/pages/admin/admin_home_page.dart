@@ -19,7 +19,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   Future<void> _loadUserName() async {
     UserProvider userProvider = UserProvider();
-    String fetchedName = await userProvider.fetchUserName(widget.uid);
+    String fetchedName =
+        await userProvider.userDetails?.then((userData) {
+          return userData?['fullName'] ?? 'Admin';
+        }) ??
+        'Admin';
     setState(() {
       userName = fetchedName;
     });
@@ -32,15 +36,17 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   Future<void> fetchCounts() async {
-    final bookings = await FirebaseFirestore.instance
-        .collection('bookings')
-        .where('status', isEqualTo: 'active')
-        .get();
+    final bookings =
+        await FirebaseFirestore.instance
+            .collection('bookings')
+            .where('status', isEqualTo: 'active')
+            .get();
 
-    final vehicles = await FirebaseFirestore.instance
-        .collection('listing')
-        .where('status', isEqualTo: 'pending')
-        .get();
+    final vehicles =
+        await FirebaseFirestore.instance
+            .collection('listing')
+            .where('status', isEqualTo: 'pending')
+            .get();
 
     setState(() {
       activeBookings = bookings.docs.length;
@@ -61,24 +67,33 @@ class _AdminHomePageState extends State<AdminHomePage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-        icon: Icon(Icons.account_circle, size: 48), // You can use any icon or even an Image widget
-        onPressed: () {
-      // Add your profile page navigation here
-        },
+          icon: Icon(
+            Icons.account_circle,
+            size: 48,
+          ), // You can use any icon or even an Image widget
+          onPressed: () {
+            // Add your profile page navigation here
+          },
+        ),
+        title: Text('Welcome ${userName ?? 'Admin'}'),
       ),
-      title: Text('Welcome ${userName ?? 'Admin'}'),
-  ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             _buildStatCard('Active Bookings', activeBookings.toString()),
-            _buildActionCard('Vehicle To Verify', vehiclesToVerify.toString(), () {
-              Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const VerifyListingsPage()),
-              );
-            }),
+            _buildActionCard(
+              'Vehicle To Verify',
+              vehiclesToVerify.toString(),
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const VerifyListingsPage(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -89,7 +104,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.grey[900],
-        showUnselectedLabels: true,   //Show labels for unselected items
+        showUnselectedLabels: true, //Show labels for unselected items
         items: [
           BottomNavigationBarItem(
             icon: Padding(
@@ -125,79 +140,84 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   Widget _buildStatCard(String label, String count) {
-  return SizedBox(
-    height: 200,
-    width: double.infinity,  // <-- Make card fill width of parent
-    child: Card(
-      color: Colors.grey[900],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: EdgeInsets.symmetric(vertical: 12),  // Keep vertical margin only here
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              count,
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+    return SizedBox(
+      height: 200,
+      width: double.infinity, // <-- Make card fill width of parent
+      child: Card(
+        color: Colors.grey[900],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: EdgeInsets.symmetric(
+          vertical: 12,
+        ), // Keep vertical margin only here
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                count,
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            SizedBox(height: 12),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.white,
-              ),
-            ),
-          ],
+              SizedBox(height: 12),
+              Text(label, style: TextStyle(fontSize: 20, color: Colors.white)),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildActionCard(String label, String count, VoidCallback onPressed) {
-  return SizedBox(
-    height: 200,
-    width: double.infinity,  // Make full width
-    child: Card(
-      color: Colors.grey[900],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: EdgeInsets.symmetric(vertical: 12), // Just vertical margin here
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    count,
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    label,
-                    style: TextStyle(fontSize: 20, color: Colors.white),
-                  ),
-                  Spacer(), // Push button down
-                ],
+    return SizedBox(
+      height: 200,
+      width: double.infinity, // Make full width
+      child: Card(
+        color: Colors.grey[900],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: EdgeInsets.symmetric(vertical: 12), // Just vertical margin here
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      count,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      label,
+                      style: TextStyle(fontSize: 20, color: Colors.white),
+                    ),
+                    Spacer(), // Push button down
+                  ],
+                ),
               ),
-            ),
-            ElevatedButton(
-              onPressed: onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text('View', style: TextStyle(color: Colors.white, fontSize: 16)),
+              ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'View',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
               ),
             ],
           ),
