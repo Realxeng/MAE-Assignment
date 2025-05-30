@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:nab/utils/booking_provider.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:nab/utils/image_provider.dart';
@@ -13,16 +16,32 @@ class CustomerHomePage extends StatefulWidget {
 }
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
+  bool _hasFetchedBookings = false;
+
   @override
   void initState() {
     super.initState();
-    final userProvider = context.read<UserProvider>();
-    userProvider.onSignedOut = () {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You have been signed out.")),
-      );
-      Navigator.pushReplacementNamed(context, '/login');
-    };
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userProvider = context.read<UserProvider>();
+      userProvider.onSignedOut = () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("You have been signed out.")),
+        );
+        Navigator.pushReplacementNamed(context, '/login');
+      };
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+
+    if (user != null && !_hasFetchedBookings) {
+      context.read<BookingProvider>().fetchPastBookings(user);
+      context.read<ListingProvider>().fetchAvailableListings();
+      _hasFetchedBookings = true;
+    }
   }
 
   ImageProvider _getProfileImage() {
@@ -33,8 +52,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = context.watch<UserProvider>();
-    final username = userProvider.user?.username ?? "User";
+    final user = context.watch<UserProvider>().user;
+    log("Building CustomerHomePage for user: ${user?.username ?? "Unknown"}");
+    if (user == null) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final username = user.username ?? "User";
     const borderRadius = BorderRadius.all(Radius.circular(16));
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -58,6 +81,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             "Welcome!",
@@ -210,18 +234,51 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                 ),
               ),
               // Past Bookings Section
-              SizedBox(
-                height: 95,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.only(left: 24, right: 12),
-                  separatorBuilder:
-                      (context, index) => const SizedBox(width: 12),
-                  itemCount: 3,
-                  itemBuilder: (context, idx) {
-                    return _CarBookingCard(title: "PERODUA BEZZA\nVMA3215");
-                  },
-                ),
+              Consumer<BookingProvider>(
+                builder: (context, bookingProvider, child) {
+                  final pastBookings = bookingProvider.bookings;
+                  if (pastBookings.isEmpty) {
+                    return SizedBox(
+                      height: 140,
+                      child: Center(child: Text("No past bookings found")),
+                    );
+                  }
+
+                  return SizedBox(
+                    height: 140,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(left: 24, right: 12),
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemCount: pastBookings.length,
+                      itemBuilder: (context, index) {
+                        final booking = pastBookings[index];
+                        final car = booking.car;
+
+                        ImageProvider? imageProvider;
+
+                        final base64Image = car?.image;
+                        if (base64Image != null && base64Image.isNotEmpty) {
+                          try {
+                            imageProvider = MemoryImage(
+                              ImageConstants.constants.decodeBase64(
+                                base64Image,
+                              ),
+                            );
+                          } catch (e) {
+                            // If decoding fails, fallback to placeholder
+                            imageProvider = null;
+                          }
+                        }
+                        return _CarBookingCard(
+                          carModel: car?.carModel ?? 'Unknown Model',
+                          plateNumber: car?.carPlate ?? 'Unknown Plate',
+                          image: imageProvider,
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -272,12 +329,7 @@ class _CarCard extends StatelessWidget {
   final String? plateNumber; // car plate number
   final ImageProvider? image;
 
-  const _CarCard({
-    Key? key,
-    this.title = "Perodua Myvi",
-    this.plateNumber,
-    this.image,
-  }) : super(key: key);
+  const _CarCard({this.title = "Perodua Myvi", this.plateNumber, this.image});
 
   @override
   Widget build(BuildContext context) {
@@ -354,48 +406,52 @@ class _CarCard extends StatelessWidget {
 }
 
 class _CarBookingCard extends StatelessWidget {
-  final String title;
-  const _CarBookingCard({required this.title});
+  final String carModel;
+  final String plateNumber;
+  final ImageProvider? image;
+
+  const _CarBookingCard({
+    required this.carModel,
+    required this.plateNumber,
+    this.image,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 120,
+      width: 140,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: Colors.white,
         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Booking image placeholder
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade100, Colors.green.shade200],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
               ),
-              child: Center(
-                child: Image(
-                  image: AssetImage('assets/Nab_Emblem.png'),
-                  width: 100,
-                  height: 100,
-                  color: Colors.white70,
-                ),
-              ),
+              child:
+                  image != null
+                      ? Image(
+                        image: image!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      )
+                      : Container(
+                        color: Colors.grey.shade300,
+                        child: const Center(
+                          child: Icon(Icons.directions_car, size: 60),
+                        ),
+                      ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
             child: Text(
-              title,
+              "$carModel\n$plateNumber",
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
