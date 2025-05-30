@@ -18,8 +18,10 @@ class _AuthRouterState extends State<AuthRouter> {
     super.initState();
     userProvider = UserProvider();
     userProvider.addListener(() {
-      // rebuild when user data changes
-      if (mounted) setState(() {});
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
     });
   }
 
@@ -34,56 +36,56 @@ class _AuthRouterState extends State<AuthRouter> {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // Splash/Loading while checking auth state
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // Not signed in
         if (!snapshot.hasData || snapshot.data == null) {
-          return LandingPage(); // Show login/welcome page
+          return LandingPage();
         }
 
         final user = snapshot.data!;
         final userModel = userProvider.user;
 
-        // Still loading user data
         if (userModel == null) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
-        // Redirect based on role
-        switch (userModel.role) {
-          case "admin":
-            Navigator.pushReplacementNamed(
-              context,
-              '/adminHome',
-              arguments: {'uid': user.uid},
-            );
-            break;
-          case "renter":
-            Navigator.pushReplacementNamed(
-              context,
-              '/customerHome',
-              arguments: {'uid': user.uid},
-            );
-            break;
-          case "vendor":
-            Navigator.pushReplacementNamed(
-              context,
-              '/vendorHome',
-              arguments: {'uid': user.uid},
-            );
-            break;
-          default:
-            Navigator.pushReplacementNamed(context, '/');
-            break;
-        }
-        // Return a placeholder widget after navigation to satisfy the return type
+        // Instead of navigating directly inside build, defer it:
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          switch (userModel.role) {
+            case "admin":
+              Navigator.pushReplacementNamed(
+                context,
+                '/adminHome',
+                arguments: {'uid': user.uid},
+              );
+              break;
+            case "renter":
+              Navigator.pushReplacementNamed(
+                context,
+                '/customerHome',
+                arguments: {'uid': user.uid},
+              );
+              break;
+            case "vendor":
+              Navigator.pushReplacementNamed(
+                context,
+                '/vendorHome',
+                arguments: {'uid': user.uid},
+              );
+              break;
+            default:
+              Navigator.pushReplacementNamed(context, '/');
+              break;
+          }
+        });
+
+        // Show loading while waiting for navigation
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       },
     );

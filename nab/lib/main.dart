@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
       // Use home only, no initialRoute since we rely on AuthRouter deciding where to go.
       home: AuthRouter(),
       routes: {
-        '/': (context) => LandingPage(),
+        '/landing': (context) => LandingPage(),
         '/login': (context) => LoginPage(),
       },
       onGenerateRoute: (settings) {
