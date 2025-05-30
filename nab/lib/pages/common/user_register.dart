@@ -186,13 +186,12 @@ class _RegisterPageState extends State<RegisterPage> {
   void _onNextPressed() {
     AuthWrapper authWrapper = AuthWrapper();
     _controllers[2].text = _dobString ?? '';
-    try{
+    try {
       authWrapper.signUp(_controllers, widget.role);
-    }
-    catch (e) {
+    } catch (e) {
       ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error Signing Up.')));;
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error Signing Up.')));
     }
   }
 
