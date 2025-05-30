@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nab/admin_home_page.dart';
-import 'package:nab/cus_home_page.dart';
-import 'package:nab/landing_page.dart';
+import 'package:nab/pages/customer/cus_home_page.dart';
+import 'package:nab/pages/common/landing_page.dart';
 import 'package:nab/utils/user_provider.dart';
-import 'package:nab/vendor_home_page.dart';
+import 'package:nab/pages/vendor/vendor_home_page.dart';
 
 class AuthRouter extends StatelessWidget {
   const AuthRouter({super.key});
