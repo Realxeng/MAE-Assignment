@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:nab/landing_page.dart';
 import 'firebase_options.dart';
-import 'user_login.dart';
-import 'admin_home_page.dart';
+import 'utils/auth_router.dart';
 
 void main() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: WidgetsBinding.instance);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -21,11 +19,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // This widget is the root of your application.
   @override
   void initState() {
     super.initState();
-    initialization(); // Call the initialization function
+    initialization();
   }
 
   void initialization() async {
@@ -40,8 +37,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0x00AFFFFF)),
       ),
-      // home: Login(),
-      home: LandingPage(),
+      home: AuthRouter(),
     );
   }
 }
