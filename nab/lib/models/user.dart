@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserModel {
   final String id;
   final String uid;
@@ -23,9 +25,9 @@ class UserModel {
     this.dateCreated,
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> data) {
+  factory UserModel.fromDocument(DocumentSnapshot data) {
     return UserModel(
-      id: data['id'] ?? '',
+      id: data.id,
       uid: data['uid'] ?? '',
       role: data['role'] ?? 'Unknown',
       fullName: data['fullName'],

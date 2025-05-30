@@ -42,8 +42,8 @@ class UserProvider extends ChangeNotifier {
         .listen(
           (querySnapshot) {
             if (querySnapshot.docs.isNotEmpty) {
-              final userDoc = querySnapshot.docs.first.data();
-              _userModel = UserModel.fromMap(userDoc);
+              final userDoc = querySnapshot.docs.first;
+              _userModel = UserModel.fromDocument(userDoc);
             } else {
               _userModel = null;
             }

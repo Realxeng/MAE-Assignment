@@ -27,7 +27,29 @@ class ListingProvider extends ChangeNotifier {
           (querySnapshot) {
             _listingModel =
                 querySnapshot.docs
-                    .map((doc) => ListingModel.fromMap(doc.data()))
+                    .map((doc) => ListingModel.fromDocument(doc))
+                    .toList();
+            notifyListeners();
+          },
+          onError: (error) {
+            _listingModel = [];
+            notifyListeners();
+          },
+        );
+  }
+
+  Future<void> fetchAvailableListings() async {
+    await _listingSubscription?.cancel();
+
+    _listingSubscription = FirebaseFirestore.instance
+        .collection('listing')
+        .where('status', isEqualTo: 'accepted')
+        .snapshots()
+        .listen(
+          (querySnapshot) {
+            _listingModel =
+                querySnapshot.docs
+                    .map((doc) => ListingModel.fromDocument(doc))
                     .toList();
             notifyListeners();
           },

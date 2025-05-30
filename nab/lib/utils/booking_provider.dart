@@ -29,7 +29,7 @@ class BookingProvider extends ChangeNotifier {
           (querySnapshot) {
             _bookings =
                 querySnapshot.docs
-                    .map((doc) => BookingModel.fromMap(doc.data()))
+                    .map((doc) => BookingModel.fromDocument(doc))
                     .toList();
             notifyListeners();
           },
@@ -56,12 +56,13 @@ class BookingProvider extends ChangeNotifier {
     _bookingSubscription = FirebaseFirestore.instance
         .collection('bookings')
         .where('customer', isEqualTo: user.id)
+        .where('dateEnded', isLessThan: DateTime.now())
         .snapshots()
         .listen(
           (querySnapshot) {
             _bookings =
                 querySnapshot.docs
-                    .map((doc) => BookingModel.fromMap(doc.data()))
+                    .map((doc) => BookingModel.fromDocument(doc))
                     .toList();
             notifyListeners();
           },

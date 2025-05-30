@@ -1,17 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nab/models/listing.dart';
+import 'package:nab/models/user.dart';
 
 class BookingModel {
+  String? id;
   String? createdAt;
   String? dateEnded;
   String? dateStarted;
   String? notes;
   double? price;
   String? status;
-  DocumentReference? car;
-  DocumentReference? customer;
-  DocumentReference? vendor;
+  ListingModel? car;
+  UserModel? customer;
+  UserModel? vendor;
 
   BookingModel({
+    this.id,
     this.createdAt,
     this.dateEnded,
     this.dateStarted,
@@ -23,17 +27,24 @@ class BookingModel {
     this.vendor,
   });
 
-  factory BookingModel.fromMap(Map<String, dynamic> data) {
+  factory BookingModel.fromDocument(DocumentSnapshot data) {
     return BookingModel(
+      id: data.id,
       createdAt: data['createdAt'],
       dateEnded: data['dateEnded'],
       dateStarted: data['dateStarted'],
       notes: data['notes'],
       price: (data['price'] as num?)?.toDouble(),
       status: data['status'],
-      car: data['car'] as DocumentReference?,
-      customer: data['customer'] as DocumentReference?,
-      vendor: data['vendor'] as DocumentReference?,
+      car: data['car'] != null ? ListingModel.fromDocument(data['car']) : null,
+      customer:
+          data['customer'] != null
+              ? UserModel.fromDocument(data['customer'].get())
+              : null,
+      vendor:
+          data['vendor'] != null
+              ? UserModel.fromDocument(data['vendor'].get())
+              : null,
     );
   }
 

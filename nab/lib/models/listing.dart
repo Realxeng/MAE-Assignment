@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ListingModel {
+  final String? id;
   final String? attachments;
   final String? carModel;
   final String? carPlate;
@@ -10,6 +13,7 @@ class ListingModel {
   final String? vehicleCondition;
 
   ListingModel({
+    this.id,
     this.attachments,
     this.carModel,
     this.carPlate,
@@ -21,8 +25,9 @@ class ListingModel {
     this.vehicleCondition,
   });
 
-  factory ListingModel.fromMap(Map<String, dynamic> data) {
+  factory ListingModel.fromDocument(DocumentSnapshot data) {
     return ListingModel(
+      id: data.id,
       attachments: data['attachments'],
       carModel: data['carModel'],
       carPlate: data['carPlate'],
