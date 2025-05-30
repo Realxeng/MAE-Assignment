@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/utils/user_provider.dart';
-import 'package:nab/pages/admin/admin_verify_listing.dart';
+import 'package:nab/pages/admin/admin_verify_listings.dart';
+import 'package:nab/pages/admin/admin_view_bookings.dart';
 import 'package:provider/provider.dart';
 
 class AdminHomePage extends StatefulWidget {
@@ -68,11 +69,32 @@ class _AdminHomePageState extends State<AdminHomePage> {
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      // Add page navigation logic here
-    });
+  setState(() {
+    _selectedIndex = index;
+  });
+
+  switch (index) {
+    case 0:
+      //stay in homepage
+      break;
+
+    case 1:
+      // Navigate to Manage Users page
+      break;
+
+    case 2:
+      // Navigate to View Bookings page
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ViewBookingsPage()),
+      );
+      break;
+
+    case 3:
+      // Navigate to View Feedbacks page
+      break;
   }
+}
 
   @override
   Widget build(BuildContext context) {

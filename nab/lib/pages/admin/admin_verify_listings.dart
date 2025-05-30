@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/utils/image_provider.dart';
@@ -113,7 +112,7 @@ class _VerifyListingsPageState extends State<VerifyListingsPage> {
             return const Center(child: Text('No listings found.'));
           }
 
-          return ListView.builder(
+          return ListView.builder( 
             padding: const EdgeInsets.all(16),
             itemCount: docs.length,
             itemBuilder: (context, index) {
@@ -130,7 +129,7 @@ class _VerifyListingsPageState extends State<VerifyListingsPage> {
               final contactNumber = data['contactNumber'] ?? 'N/A';
               final isExpanded = _expandedDocIds.contains(doc.id);
 
-              bool isActionDone = status == 'Accepted' || status == 'Rejected';
+              bool isActionDone = status == 'accepted' || status == 'rejected';
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
