@@ -65,10 +65,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 4),
                           Text(
                             username,
-                            style: TextStyle(color: Colors.grey, fontSize: 15),
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 15,
+                              fontFamily: 'Poppins',
+                            ),
                           ),
                         ],
                       ),

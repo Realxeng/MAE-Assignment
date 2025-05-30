@@ -10,13 +10,20 @@ import 'package:nab/pages/common/landing_page.dart';
 import 'firebase_options.dart';
 import 'utils/auth_router.dart';
 import 'utils/user_provider.dart';
+import 'utils/listing_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: WidgetsBinding.instance);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
-    ChangeNotifierProvider(create: (_) => UserProvider(), child: const MyApp()),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => ListingProvider()),
+      ],
+      child: MyApp(),
+    ),
   );
 }
 
