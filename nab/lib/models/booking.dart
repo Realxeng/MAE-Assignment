@@ -36,15 +36,42 @@ class BookingModel {
       notes: data['notes'],
       price: (data['price'] as num?)?.toDouble(),
       status: data['status'],
-      car: data['car'] != null ? ListingModel.fromDocument(data['car']) : null,
-      customer:
-          data['customer'] != null
-              ? UserModel.fromDocument(data['customer'].get())
-              : null,
-      vendor:
-          data['vendor'] != null
-              ? UserModel.fromDocument(data['vendor'].get())
-              : null,
+    );
+  }
+
+  static Future<BookingModel> fromDocumentAsync(DocumentSnapshot data) async {
+    final customerRef = data['customer'];
+    final vendorRef = data['vendor'];
+    final carRef = data['car'] as DocumentReference?;
+    UserModel? customer;
+    UserModel? vendor;
+    ListingModel? car;
+
+    if (carRef != null) {
+      final carSnap = await carRef.get();
+      car = ListingModel.fromDocument(carSnap);
+    }
+
+    if (customerRef != null) {
+      final customerSnap = await customerRef.get();
+      customer = UserModel.fromDocument(customerSnap);
+    }
+    if (vendorRef != null) {
+      final vendorSnap = await vendorRef.get();
+      vendor = UserModel.fromDocument(vendorSnap);
+    }
+
+    return BookingModel(
+      id: data.id,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      dateEnded: (data['dateEnded'] as Timestamp?)?.toDate(),
+      dateStarted: (data['dateStarted'] as Timestamp?)?.toDate(),
+      notes: data['notes'],
+      price: (data['price'] as num?)?.toDouble(),
+      status: data['status'],
+      car: car,
+      customer: customer,
+      vendor: vendor,
     );
   }
 
