@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthWrapper {
@@ -34,6 +33,7 @@ class AuthWrapper {
         'township': details[3].text,
         'username': details[4].text,
         'role': role,
+        'dateCreated': DateTime.now(),
       });
     } catch (e) {
       log('Error signing up: $e');

@@ -1,26 +1,28 @@
-import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:nab/pages/customer/cus_home_page.dart';
 import 'package:nab/pages/admin/admin_home_page.dart';
 import 'package:nab/pages/vendor/vendor_home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nab/models/user_model.dart';
 
-class UserProvider {
-  Future<Map<String, dynamic>?>? userDetails;
+class UserProvider extends ChangeNotifier {
+  UserModel? _userModel;
+  UserModel? get user => _userModel;
   void Function()? onSignedOut;
   UserProvider() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
-        userDetails = fetchUserData(user.uid);
+        fetchUserData(user.uid);
       } else {
+        _userModel = null;
         onSignedOut?.call();
+        notifyListeners();
       }
     });
   }
 
-  Future<Map<String, dynamic>?> fetchUserData(String uid) async {
+  Future<void> fetchUserData(String uid) async {
     try {
       final querySnapshot =
           await FirebaseFirestore.instance
@@ -29,18 +31,20 @@ class UserProvider {
               .limit(1)
               .get();
       if (querySnapshot.docs.isNotEmpty) {
-        final userDoc = querySnapshot.docs.first;
-        return userDoc.data();
+        final userDoc = querySnapshot.docs.first.data();
+        _userModel = UserModel.fromMap(userDoc);
+      } else {
+        _userModel = null;
       }
-      return null;
+      notifyListeners();
     } catch (e) {
-      // log error or handle as needed
-      return null;
+      _userModel = null;
+      notifyListeners();
     }
   }
 
   void redirectUser(BuildContext context, String uid) async {
-    String role = (await userDetails)?['role'] ?? 'Unknown';
+    String role = _userModel?.role ?? 'Unknown';
     switch (role) {
       case "renter":
         Navigator.pushReplacement(
