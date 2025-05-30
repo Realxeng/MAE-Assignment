@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nab/utils/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class CustomerHomePage extends StatefulWidget {
   final String uid;
@@ -10,12 +11,10 @@ class CustomerHomePage extends StatefulWidget {
 }
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
-  late final UserProvider userProvider;
-
   @override
   void initState() {
     super.initState();
-    userProvider = UserProvider();
+    final userProvider = context.read<UserProvider>();
     userProvider.onSignedOut = () {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("You have been signed out.")),
@@ -26,6 +25,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.watch<UserProvider>();
+    final username = userProvider.user?.username ?? "User";
     const borderRadius = BorderRadius.all(Radius.circular(16));
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -59,7 +60,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            userProvider.user?.username ?? "User",
+                            username,
                             style: TextStyle(color: Colors.grey, fontSize: 15),
                           ),
                         ],
@@ -358,6 +359,5 @@ class _CarBookingCard extends StatelessWidget {
 }
 
 ImageProvider _getProfileImage(String uid) {
-  // You can later fetch actual image using the uid if needed
   return const AssetImage('assets/images/profile_placeholder.png');
 }

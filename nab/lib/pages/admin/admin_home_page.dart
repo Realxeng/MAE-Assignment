@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:nab/pages/admin/admin_verify_listing.dart';
+import 'package:provider/provider.dart';
 
 class AdminHomePage extends StatefulWidget {
   final String uid;
@@ -18,17 +19,20 @@ class _AdminHomePageState extends State<AdminHomePage> {
   String? userName;
 
   Future<void> _loadUserName() async {
-    UserProvider userProvider = UserProvider();
-    String fetchedName = userProvider.user?.username ?? 'Admin';
-    setState(() {
-      userName = fetchedName;
-    });
+    final userProvider = context.read<UserProvider>();
+    userProvider.onSignedOut = () {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You have been signed out.")),
+      );
+      Navigator.pushReplacementNamed(context, '/login');
+    };
   }
 
   @override
   void initState() {
     super.initState();
     fetchCounts();
+    _loadUserName();
   }
 
   Future<void> fetchCounts() async {
@@ -59,7 +63,8 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    _loadUserName();
+    final userProvider = context.watch<UserProvider>();
+    final userName = userProvider.user?.username ?? "User";
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
