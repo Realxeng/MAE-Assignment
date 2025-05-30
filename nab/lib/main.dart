@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:nab/pages/common/user_login.dart';
+import 'package:nab/pages/customer/cus_home_page.dart';
+import 'package:nab/pages/admin/admin_home_page.dart';
+import 'package:nab/pages/vendor/vendor_home_page.dart';
+import 'package:nab/pages/common/landing_page.dart';
 import 'firebase_options.dart';
 import 'utils/auth_router.dart';
 
@@ -34,10 +39,37 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Nab',
+      // Use home only, no initialRoute since we rely on AuthRouter deciding where to go.
+      home: AuthRouter(),
+      routes: {
+        '/': (context) => LandingPage(),
+        '/login': (context) => LoginPage(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/adminHome') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => AdminHomePage(uid: args['uid']),
+          );
+        }
+        if (settings.name == '/customerHome') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => CustomerHomePage(uid: args['uid']),
+          );
+        }
+        if (settings.name == '/vendorHome') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => VendorHomePage(uid: args['uid']),
+          );
+        }
+        // Fallback route
+        return MaterialPageRoute(builder: (context) => LandingPage());
+      },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0x00AFFFFF)),
       ),
-      home: AuthRouter(),
     );
   }
 }

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nab/utils/user_provider.dart';
-import 'package:nab/pages/customer/cus_home_page.dart';
-import 'package:nab/pages/admin/admin_home_page.dart';
-import 'package:nab/pages/vendor/vendor_home_page.dart';
 import 'package:nab/pages/common/landing_page.dart';
 
 class AuthRouter extends StatefulWidget {
@@ -62,14 +59,32 @@ class _AuthRouterState extends State<AuthRouter> {
         // Redirect based on role
         switch (userModel.role) {
           case "admin":
-            return AdminHomePage(uid: user.uid);
+            Navigator.pushReplacementNamed(
+              context,
+              '/adminHome',
+              arguments: {'uid': user.uid},
+            );
+            break;
           case "renter":
-            return CustomerHomePage(uid: user.uid);
+            Navigator.pushReplacementNamed(
+              context,
+              '/customerHome',
+              arguments: {'uid': user.uid},
+            );
+            break;
           case "vendor":
-            return VendorHomePage(uid: user.uid);
+            Navigator.pushReplacementNamed(
+              context,
+              '/vendorHome',
+              arguments: {'uid': user.uid},
+            );
+            break;
           default:
-            return LandingPage(); // Unknown role or error
+            Navigator.pushReplacementNamed(context, '/');
+            break;
         }
+        // Return a placeholder widget after navigation to satisfy the return type
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
       },
     );
   }
