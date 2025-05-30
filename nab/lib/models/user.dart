@@ -25,9 +25,13 @@ class UserModel {
     this.dateCreated,
   });
 
-  factory UserModel.fromDocument(DocumentSnapshot data) {
+  factory UserModel.fromDocument(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>?;
+    if (data == null) {
+      throw StateError("User document data is null");
+    }
     return UserModel(
-      id: data.id,
+      id: doc.id,
       uid: data['uid'] ?? '',
       role: data['role'] ?? 'Unknown',
       fullName: data['fullName'],
@@ -36,7 +40,7 @@ class UserModel {
       township: data['township'],
       username: data['username'],
       profileImage: data['picture'],
-      dateCreated: data['dateCreated'],
+      dateCreated: data['dateCreated'] as DateTime?,
     );
   }
 

@@ -4,9 +4,9 @@ import 'package:nab/models/user.dart';
 
 class BookingModel {
   String? id;
-  String? createdAt;
-  String? dateEnded;
-  String? dateStarted;
+  DateTime? createdAt;
+  DateTime? dateEnded;
+  DateTime? dateStarted;
   String? notes;
   double? price;
   String? status;
@@ -30,9 +30,9 @@ class BookingModel {
   factory BookingModel.fromDocument(DocumentSnapshot data) {
     return BookingModel(
       id: data.id,
-      createdAt: data['createdAt'],
-      dateEnded: data['dateEnded'],
-      dateStarted: data['dateStarted'],
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      dateEnded: (data['dateEnded'] as Timestamp?)?.toDate(),
+      dateStarted: (data['dateStarted'] as Timestamp?)?.toDate(),
       notes: data['notes'],
       price: (data['price'] as num?)?.toDouble(),
       status: data['status'],

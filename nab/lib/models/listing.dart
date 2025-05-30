@@ -25,9 +25,10 @@ class ListingModel {
     this.vehicleCondition,
   });
 
-  factory ListingModel.fromDocument(DocumentSnapshot data) {
+  factory ListingModel.fromDocument(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
     return ListingModel(
-      id: data.id,
+      id: doc.id,
       attachments: data['attachments'],
       carModel: data['carModel'],
       carPlate: data['carPlate'],
