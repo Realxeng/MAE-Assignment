@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 class AuthWrapper {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<void> signUp(List<TextEditingController> details) async {
+  Future<void> signUp(List<TextEditingController> details, String role) async {
     try {
       final credentials = await _auth.createUserWithEmailAndPassword(
         email: details[1].text,
@@ -23,6 +23,7 @@ class AuthWrapper {
         'dob': details[2].text,
         'township': details[3].text,
         'username': details[4].text,
+        'role': role,
       });
     } catch (e) {
       log('Error signing up: $e');

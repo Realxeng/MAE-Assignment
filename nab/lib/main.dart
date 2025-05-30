@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:nab/landing_page.dart';
 import 'firebase_options.dart';
 import 'login.dart';
 import 'admin_home_page.dart';
@@ -40,7 +41,7 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0x00AFFFFF)),
       ),
       // home: Login(),
-      home: AdminHomePage()
+      home: LandingPage(),
     );
   }
 }

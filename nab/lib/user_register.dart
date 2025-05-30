@@ -3,13 +3,14 @@ import 'package:nab/utils/auth_wrapper.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
-
+  final String role;
+  const RegisterPage({super.key, required this.role});
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  _RegisterPageState();
   final Color mainGrey = Color(0xFFD9D9D9);
   final Color darkGrey = Color(0xFF9A9A9A);
   String? _dobString;
@@ -206,7 +207,7 @@ class _RegisterPageState extends State<RegisterPage> {
     AuthWrapper authWrapper = AuthWrapper();
     _controllers[2].text = _dobString ?? '';
     try{
-      authWrapper.signUp(_controllers);
+      authWrapper.signUp(_controllers, widget.role);
     }
     catch (e) {
       log('Error during sign up: $e');
@@ -214,7 +215,6 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _onBackPressed() {
-    // Handle the back button press
-    // You can add your logic here, such as navigating to the previous screen
+    Navigator.pop(context);
   }
 }
