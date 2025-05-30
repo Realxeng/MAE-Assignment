@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nab/pages/customer/cus_home_page.dart';
@@ -7,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/models/user.dart';
 
 class UserProvider extends ChangeNotifier {
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _userSubscription;
   UserModel? _userModel;
   UserModel? get user => _userModel;
   void Function()? onSignedOut;
@@ -18,29 +21,40 @@ class UserProvider extends ChangeNotifier {
         _userModel = null;
         onSignedOut?.call();
         notifyListeners();
+        _userSubscription?.cancel();
       }
     });
   }
 
+  @override
+  void dispose() {
+    _userSubscription?.cancel();
+    super.dispose();
+  }
+
   Future<void> fetchUserData(String uid) async {
-    try {
-      final querySnapshot =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .where('uid', isEqualTo: uid)
-              .limit(1)
-              .get();
-      if (querySnapshot.docs.isNotEmpty) {
-        final userDoc = querySnapshot.docs.first.data();
-        _userModel = UserModel.fromMap(userDoc);
-      } else {
-        _userModel = null;
-      }
-      notifyListeners();
-    } catch (e) {
-      _userModel = null;
-      notifyListeners();
-    }
+    await _userSubscription?.cancel();
+
+    _userSubscription = FirebaseFirestore.instance
+        .collection('users')
+        .where('uid', isEqualTo: uid)
+        .limit(1)
+        .snapshots()
+        .listen(
+          (querySnapshot) {
+            if (querySnapshot.docs.isNotEmpty) {
+              final userDoc = querySnapshot.docs.first.data();
+              _userModel = UserModel.fromMap(userDoc);
+            } else {
+              _userModel = null;
+            }
+            notifyListeners();
+          },
+          onError: (error) {
+            _userModel = null;
+            notifyListeners();
+          },
+        );
   }
 
   void redirectUser(BuildContext context, String uid) async {

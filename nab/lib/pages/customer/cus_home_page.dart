@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:nab/utils/image_provider.dart';
 
 class CustomerHomePage extends StatefulWidget {
   final String uid;
@@ -23,6 +24,12 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     };
   }
 
+  ImageProvider _getProfileImage() {
+    final userProvider = context.watch<UserProvider>();
+    final profileImage = userProvider.user?.profileImage ?? "User";
+    return MemoryImage(ImageConstants.constants.decodeBase64(profileImage));
+  }
+
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
@@ -43,7 +50,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                   children: [
                     CircleAvatar(
                       radius: 26,
-                      backgroundImage: _getProfileImage(widget.uid),
+                      backgroundImage: _getProfileImage(),
                       backgroundColor: Colors.grey[200],
                     ),
                     const SizedBox(width: 16),
@@ -356,8 +363,4 @@ class _CarBookingCard extends StatelessWidget {
       ),
     );
   }
-}
-
-ImageProvider _getProfileImage(String uid) {
-  return const AssetImage('assets/images/profile_placeholder.png');
 }
