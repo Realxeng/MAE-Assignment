@@ -51,11 +51,14 @@ class BookingProvider extends ChangeNotifier {
   }
 
   Future<void> fetchPastBookings(UserModel user) async {
+    DocumentReference userDocRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.id);
     await _bookingSubscription?.cancel();
 
     _bookingSubscription = FirebaseFirestore.instance
         .collection('bookings')
-        .where('customer', isEqualTo: user.id)
+        .where('customer', isEqualTo: userDocRef)
         .where('dateEnded', isLessThan: DateTime.now())
         .snapshots()
         .listen(
