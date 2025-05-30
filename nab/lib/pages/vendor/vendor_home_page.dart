@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class VendorHomePage extends StatefulWidget {
-  const VendorHomePage({super.key});
+  final String uid;
+  const VendorHomePage({super.key, required this.uid});
 
   @override
   State<VendorHomePage> createState() => _VendorHomePageState();

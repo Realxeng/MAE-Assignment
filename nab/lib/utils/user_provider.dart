@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:nab/pages/customer/cus_home_page.dart';
@@ -7,72 +8,44 @@ import 'package:nab/pages/vendor/vendor_home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProvider {
-  Future<String> fetchUserRole(String uid) async {
-    try {
-      QuerySnapshot querySnapshot =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .where(
-                'uid',
-                isEqualTo: uid,
-              ) // Filter documents where 'uid' matches
-              .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        // Get the first matching document
-        DocumentSnapshot userDoc = querySnapshot.docs.first;
-        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-
-        // Extract the 'role' field from the document
-        String userRole = userData['role'] ?? 'Unknown';
-        return userRole;
+  Future<Map<String, dynamic>?>? userDetails;
+  void Function()? onSignedOut;
+  UserProvider() {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) {
+        userDetails = fetchUserData(user.uid);
       } else {
-        log('No user found with UID: $uid');
-        return 'No Role Found';
+        onSignedOut?.call();
       }
-    } catch (e) {
-      log('Error fetching user data: $e');
-      return 'Error';
-    }
+    });
   }
 
-  Future<String> fetchUserName(String uid) async {
+  Future<Map<String, dynamic>?> fetchUserData(String uid) async {
     try {
-      QuerySnapshot querySnapshot =
+      final querySnapshot =
           await FirebaseFirestore.instance
               .collection('users')
-              .where(
-                'uid',
-                isEqualTo: uid,
-              ) // Filter documents where 'uid' matches
+              .where('uid', isEqualTo: uid)
+              .limit(1)
               .get();
-
       if (querySnapshot.docs.isNotEmpty) {
-        // Get the first matching document
-        DocumentSnapshot userDoc = querySnapshot.docs.first;
-        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-
-        // Extract the 'role' field from the document
-        String userRole = userData['username'] ?? 'Unknown';
-        return userRole;
-      } else {
-        log('No user found with UID: $uid');
-        return 'No Role Found';
+        final userDoc = querySnapshot.docs.first;
+        return userDoc.data();
       }
+      return null;
     } catch (e) {
-      log('Error fetching user data: $e');
-      return 'Error';
+      // log error or handle as needed
+      return null;
     }
   }
 
   void redirectUser(BuildContext context, String uid) async {
-    UserProvider userProvider = UserProvider();
-    String role = await userProvider.fetchUserRole(uid);
+    String role = (await userDetails)?['role'] ?? 'Unknown';
     switch (role) {
       case "renter":
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => CustomerHomePage()),
+          MaterialPageRoute(builder: (context) => CustomerHomePage(uid: uid)),
         );
         break;
       case "admin":
@@ -84,7 +57,7 @@ class UserProvider {
       case "vendor":
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => VendorHomePage()),
+          MaterialPageRoute(builder: (context) => VendorHomePage(uid: uid)),
         );
         break;
       default:

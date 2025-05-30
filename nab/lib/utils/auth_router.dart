@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:nab/pages/admin/admin_home_page.dart';
 import 'package:nab/pages/customer/cus_home_page.dart';
-import 'package:nab/pages/common/landing_page.dart';
-import 'package:nab/utils/user_provider.dart';
+import 'package:nab/pages/admin/admin_home_page.dart';
 import 'package:nab/pages/vendor/vendor_home_page.dart';
+import 'package:nab/pages/common/landing_page.dart';
+import 'user_provider.dart';
 
 class AuthRouter extends StatelessWidget {
   const AuthRouter({super.key});
@@ -20,29 +20,35 @@ class AuthRouter extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-
         // Not signed in
         if (!snapshot.hasData || snapshot.data == null) {
           return LandingPage(); // Show login/welcome
         }
 
-        // Signed in, fetch user role
-        return FutureBuilder<String>(
-          future: UserProvider().fetchUserRole(snapshot.data!.uid),
+        // Signed in, fetch user role - use FutureBuilder with fetchUserData
+        final user = snapshot.data!;
+        return FutureBuilder<Map<String, dynamic>?>(
+          future: UserProvider().fetchUserData(user.uid),
           builder: (context, roleSnap) {
-            if (!roleSnap.hasData) {
+            if (roleSnap.connectionState == ConnectionState.waiting) {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
               );
             }
+            if (!roleSnap.hasData ||
+                roleSnap.data == null ||
+                roleSnap.data!.isEmpty) {
+              return LandingPage(); // Or error page
+            }
+            String? role = roleSnap.data?['role'];
 
-            switch (roleSnap.data) {
+            switch (role) {
               case "admin":
-                return AdminHomePage(uid: snapshot.data!.uid);
+                return AdminHomePage(uid: user.uid);
               case "renter":
-                return CustomerHomePage();
+                return CustomerHomePage(uid: user.uid);
               case "vendor":
-                return VendorHomePage();
+                return VendorHomePage(uid: user.uid);
               default:
                 return LandingPage();
             }

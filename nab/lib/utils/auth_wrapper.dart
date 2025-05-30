@@ -8,6 +8,16 @@ class AuthWrapper {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> signUp(List<TextEditingController> details, String role) async {
+    // Check if username already exists
+    QuerySnapshot usernameCheck =
+        await FirebaseFirestore.instance
+            .collection('users')
+            .where('username', isEqualTo: details[4].text)
+            .get();
+    if (usernameCheck.docs.isNotEmpty) {
+      log('Username already exists');
+      return;
+    }
     try {
       final credentials = await _auth.createUserWithEmailAndPassword(
         email: details[1].text,
