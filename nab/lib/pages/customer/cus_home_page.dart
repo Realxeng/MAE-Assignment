@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:nab/utils/booking_provider.dart';
 import 'package:nab/utils/user_provider.dart';
