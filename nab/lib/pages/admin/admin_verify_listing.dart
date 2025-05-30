@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nab/utils/image_provider.dart';
 
 class VerifyListingsPage extends StatefulWidget {
   const VerifyListingsPage({super.key});
@@ -10,6 +13,7 @@ class VerifyListingsPage extends StatefulWidget {
 
 class _VerifyListingsPageState extends State<VerifyListingsPage> {
   final Set<String> _expandedDocIds = {};
+  final ImageConstants image_provider = ImageConstants.constants;
 
   void toggleExpand(String docId) {
     setState(() {
@@ -40,25 +44,46 @@ class _VerifyListingsPageState extends State<VerifyListingsPage> {
     }
   }
 
-  Widget buildImageSection(String? imageUrl, String label) {
+  Widget buildImageSection(String? base64String, String label) {
+    if (base64String == null || base64String.isEmpty) {
+      return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white, fontFamily: 'comic sans')),
+            const SizedBox(height: 8),
+            Center(child: Text('No $label available', style: const TextStyle(color: Colors.white, fontFamily: 'comic sans'))),
+            const SizedBox(height: 16),
+          ],
+      );
+    }
+
+    Uint8List imageBytes;
+    try {
+      imageBytes = image_provider.decodeBase64(base64String);
+    } catch (e) {
+      return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white, fontFamily: 'comic sans')),
+            const SizedBox(height: 8),
+            Center(child: Text('Invalid $label data', style: const TextStyle(color: Colors.white, fontFamily: 'comic sans'))),
+            const SizedBox(height: 16),
+          ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Colors.white, fontFamily: 'comic sans')),
-        SizedBox(height: 8),
-        SizedBox(
+        Text(label, style: const TextStyle(color: Colors.white, fontFamily: 'comic sans')),
+        const SizedBox(height: 8),
+        Image.memory(
+          imageBytes,
           height: 150,
           width: double.infinity,
-          child: (imageUrl != null && imageUrl.isNotEmpty)
-              ? Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      Center(child: Text('No image', style: TextStyle(color: Colors.white, fontFamily: 'comic sans'))),
-                )
-              : Center(child: Text('No $label available', style: TextStyle(color: Colors.white, fontFamily: 'comic sans'))),
+          fit: BoxFit.cover,
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
       ],
     );
   }
