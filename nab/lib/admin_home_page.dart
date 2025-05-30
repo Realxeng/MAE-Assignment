@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdminHomePage extends StatefulWidget {
-  const AdminHomePage({super.key});
+  final String uid;
+  const AdminHomePage({super.key, required this.uid});
 
   @override
   State<AdminHomePage> createState() => _AdminHomePageState();
@@ -78,7 +79,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         items: [
           BottomNavigationBarItem(
             icon: Padding(
-              padding: EdgeInsets.symmetric(vertical: 8), // Adjust as needed
+              padding: EdgeInsets.symmetric(vertical: 8),
               child: Icon(Icons.home),
             ),
             label: 'Home',
@@ -136,7 +137,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               label,
               style: TextStyle(
                 fontSize: 20,
-                color: Colors.white70,
+                color: Colors.white,
               ),
             ),
           ],
@@ -183,11 +184,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               child: Text('View', style: TextStyle(color: Colors.white, fontSize: 16)),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
