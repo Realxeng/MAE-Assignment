@@ -1,4 +1,5 @@
 class UserModel {
+  final String id;
   final String uid;
   final String role;
   final String? fullName;
@@ -10,6 +11,7 @@ class UserModel {
   final DateTime? dateCreated;
 
   UserModel({
+    required this.id,
     required this.uid,
     required this.role,
     this.fullName,
@@ -23,6 +25,7 @@ class UserModel {
 
   factory UserModel.fromMap(Map<String, dynamic> data) {
     return UserModel(
+      id: data['id'] ?? '',
       uid: data['uid'] ?? '',
       role: data['role'] ?? 'Unknown',
       fullName: data['fullName'],
