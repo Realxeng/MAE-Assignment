@@ -59,7 +59,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            userProvider.user?.fullName ?? "User",
+                            userProvider.user?.username ?? "User",
                             style: TextStyle(color: Colors.grey, fontSize: 15),
                           ),
                         ],
