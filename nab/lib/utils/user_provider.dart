@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:nab/cus_home_page.dart';
 import 'package:nab/admin_home_page.dart';
+import 'package:nab/vendor_home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProvider {
@@ -48,13 +49,13 @@ class UserProvider {
       case "admin":
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => AdminHomePage()),
+          MaterialPageRoute(builder: (context) => AdminHomePage(uid: uid)),
         );
         break;
       case "vendor":
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => AdminHomePage()),
+          MaterialPageRoute(builder: (context) => VendorHomePage()),
         );
         break;
       default:
