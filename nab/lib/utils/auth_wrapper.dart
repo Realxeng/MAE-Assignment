@@ -57,10 +57,9 @@ class AuthWrapper {
   Future<void> signOut(BuildContext context) async {
     try {
       await _auth.signOut();
+      Navigator.pushNamedAndRemoveUntil(context, '/landing', (route) => false);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Unknown user role.')));
+      log('Error signing out: $e');
     }
   }
 }
