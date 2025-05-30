@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/utils/user_provider.dart';
+import 'package:nab/pages/admin/admin_verify_listing.dart';
 
 class AdminHomePage extends StatefulWidget {
   final String uid;
@@ -38,7 +39,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
     final vehicles = await FirebaseFirestore.instance
         .collection('listing')
-        .where('isVerified', isEqualTo: false)
+        .where('status', isEqualTo: 'pending')
         .get();
 
     setState(() {
@@ -73,7 +74,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
           children: [
             _buildStatCard('Active Bookings', activeBookings.toString()),
             _buildActionCard('Vehicle To Verify', vehiclesToVerify.toString(), () {
-              // Navigate to verify vehicle page
+              Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const VerifyListingsPage()),
+              );
             }),
           ],
         ),
