@@ -19,11 +19,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   Future<void> _loadUserName() async {
     UserProvider userProvider = UserProvider();
-    String fetchedName =
-        await userProvider.userDetails?.then((userData) {
-          return userData?['fullName'] ?? 'Admin';
-        }) ??
-        'Admin';
+    String fetchedName = userProvider.user?.fullName ?? 'Admin';
     setState(() {
       userName = fetchedName;
     });

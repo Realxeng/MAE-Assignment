@@ -34,6 +34,7 @@ class AuthWrapper {
         'township': details[3].text,
         'username': details[4].text,
         'role': role,
+        'dateCreated': DateTime.now(),
       });
     } catch (e) {
       log('Error signing up: $e');

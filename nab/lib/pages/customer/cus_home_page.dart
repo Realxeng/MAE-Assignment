@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nab/utils/user_provider.dart';
+import 'package:nab/models/user_model.dart';
 
 class CustomerHomePage extends StatefulWidget {
   final String uid;
@@ -10,22 +11,12 @@ class CustomerHomePage extends StatefulWidget {
 }
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
-  late final UserProvider userProvider;
-  late final Map<String, dynamic> userDetails;
+  late UserProvider userProvider;
 
   @override
   void initState() {
     super.initState();
-    _fetchUserInfo();
-  }
-
-  void _fetchUserInfo() {
     userProvider = UserProvider();
-    userProvider.fetchUserData(widget.uid).then((userDetails) {
-      setState(() {
-        userDetails = userDetails;
-      });
-    });
   }
 
   @override
@@ -63,7 +54,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            userDetails["fullname"] ?? "User",
+                            userProvider.user?.fullName ?? "User",
                             style: TextStyle(color: Colors.grey, fontSize: 15),
                           ),
                         ],
