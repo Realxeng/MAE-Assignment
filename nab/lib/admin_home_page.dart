@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nab/utils/user_provider.dart';
 
 class AdminHomePage extends StatefulWidget {
   final String uid;
@@ -11,9 +12,17 @@ class AdminHomePage extends StatefulWidget {
 
 class _AdminHomePageState extends State<AdminHomePage> {
   int _selectedIndex = 0;
-
   int activeBookings = 0;
   int vehiclesToVerify = 0;
+  String? userName;
+
+  Future<void> _loadUserName() async {
+    UserProvider userProvider = UserProvider();
+    String fetchedName = await userProvider.fetchUserName(widget.uid);
+    setState(() {
+      userName = fetchedName;
+    });
+  }
 
   @override
   void initState() {
@@ -28,7 +37,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         .get();
 
     final vehicles = await FirebaseFirestore.instance
-        .collection('listing-application')
+        .collection('listing')
         .where('isVerified', isEqualTo: false)
         .get();
 
@@ -47,6 +56,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _loadUserName();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -55,7 +65,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
       // Add your profile page navigation here
         },
       ),
-      title: Text('Welcome Admin!'),
+      title: Text('Welcome ${userName ?? 'Admin'}'),
   ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

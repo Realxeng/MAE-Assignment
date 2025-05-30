@@ -36,6 +36,35 @@ class UserProvider {
     }
   }
 
+  Future<String> fetchUserName(String uid) async {
+    try {
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .where(
+                'uid',
+                isEqualTo: uid,
+              ) // Filter documents where 'uid' matches
+              .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Get the first matching document
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+        // Extract the 'role' field from the document
+        String userRole = userData['username'] ?? 'Unknown';
+        return userRole;
+      } else {
+        log('No user found with UID: $uid');
+        return 'No Role Found';
+      }
+    } catch (e) {
+      log('Error fetching user data: $e');
+      return 'Error';
+    }
+  }
+
   void redirectUser(BuildContext context, String uid) async {
     UserProvider userProvider = UserProvider();
     String role = await userProvider.fetchUserRole(uid);
