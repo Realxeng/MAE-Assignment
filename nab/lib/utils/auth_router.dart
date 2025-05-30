@@ -38,7 +38,7 @@ class AuthRouter extends StatelessWidget {
 
             switch (roleSnap.data) {
               case "admin":
-                return AdminHomePage();
+                return AdminHomePage(uid: snapshot.data!.uid);
               case "renter":
                 return CustomerHomePage();
               case "vendor":
