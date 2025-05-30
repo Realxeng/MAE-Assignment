@@ -10,12 +10,18 @@ class CustomerHomePage extends StatefulWidget {
 }
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
-  late UserProvider userProvider;
+  late final UserProvider userProvider;
 
   @override
   void initState() {
     super.initState();
     userProvider = UserProvider();
+    userProvider.onSignedOut = () {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You have been signed out.")),
+      );
+      Navigator.pushReplacementNamed(context, '/login');
+    };
   }
 
   @override
