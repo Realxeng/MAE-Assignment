@@ -64,7 +64,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
-    final userName = userProvider.user?.username ?? "User";
+    userName = userProvider.user?.username ?? "User";
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
