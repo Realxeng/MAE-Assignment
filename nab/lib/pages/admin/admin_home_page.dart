@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/utils/user_provider.dart';
@@ -18,6 +19,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
   int vehiclesToVerify = 0;
   String? userName;
 
+  late StreamSubscription<QuerySnapshot> _bookingsSubscription;
+  late StreamSubscription<QuerySnapshot> _vehiclesSubscription;
+
   Future<void> _loadUserName() async {
     final userProvider = context.read<UserProvider>();
     userProvider.onSignedOut = () {
@@ -31,27 +35,36 @@ class _AdminHomePageState extends State<AdminHomePage> {
   @override
   void initState() {
     super.initState();
-    fetchCounts();
     _loadUserName();
+
+    // Listen to bookings with status 'active' in realtime
+    _bookingsSubscription = FirebaseFirestore.instance
+        .collection('bookings')
+        .where('status', isEqualTo: 'active')
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        activeBookings = snapshot.docs.length;
+      });
+    });
+
+    // Listen to listings with status 'pending' in realtime
+    _vehiclesSubscription = FirebaseFirestore.instance
+        .collection('listing')
+        .where('status', isEqualTo: 'pending')
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        vehiclesToVerify = snapshot.docs.length;
+      });
+    });
   }
 
-  Future<void> fetchCounts() async {
-    final bookings =
-        await FirebaseFirestore.instance
-            .collection('bookings')
-            .where('status', isEqualTo: 'active')
-            .get();
-
-    final vehicles =
-        await FirebaseFirestore.instance
-            .collection('listing')
-            .where('status', isEqualTo: 'pending')
-            .get();
-
-    setState(() {
-      activeBookings = bookings.docs.length;
-      vehiclesToVerify = vehicles.docs.length;
-    });
+  @override
+  void dispose() {
+    _bookingsSubscription.cancel();
+    _vehiclesSubscription.cancel();
+    super.dispose();
   }
 
   void _onItemTapped(int index) {
@@ -71,9 +84,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
           icon: Icon(
             Icons.account_circle,
             size: 48,
-          ), // You can use any icon or even an Image widget
+          ), 
           onPressed: () {
-            // Add your profile page navigation here
+            // Profile navigation if needed
           },
         ),
         title: Text('Welcome $userName'),
@@ -105,7 +118,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.grey[900],
-        showUnselectedLabels: true, //Show labels for unselected items
+        showUnselectedLabels: true, 
         items: [
           BottomNavigationBarItem(
             icon: Padding(
@@ -143,13 +156,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
   Widget _buildStatCard(String label, String count) {
     return SizedBox(
       height: 200,
-      width: double.infinity, // <-- Make card fill width of parent
+      width: double.infinity,
       child: Card(
         color: Colors.grey[900],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: EdgeInsets.symmetric(
-          vertical: 12,
-        ), // Keep vertical margin only here
+        margin: EdgeInsets.symmetric(vertical: 12),
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -176,11 +187,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
   Widget _buildActionCard(String label, String count, VoidCallback onPressed) {
     return SizedBox(
       height: 200,
-      width: double.infinity, // Make full width
+      width: double.infinity,
       child: Card(
         color: Colors.grey[900],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: EdgeInsets.symmetric(vertical: 12), // Just vertical margin here
+        margin: EdgeInsets.symmetric(vertical: 12),
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Row(
@@ -202,7 +213,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                       label,
                       style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
-                    Spacer(), // Push button down
+                    Spacer(),
                   ],
                 ),
               ),
