@@ -4,7 +4,7 @@ import 'package:nab/pages/customer/cus_home_page.dart';
 import 'package:nab/pages/admin/admin_home_page.dart';
 import 'package:nab/pages/vendor/vendor_home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nab/models/user_model.dart';
+import 'package:nab/models/user.dart';
 
 class UserProvider extends ChangeNotifier {
   UserModel? _userModel;
