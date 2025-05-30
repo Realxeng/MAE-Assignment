@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nab/landing_page.dart';
 import 'firebase_options.dart';
-import 'login.dart';
+import 'user_login.dart';
 import 'admin_home_page.dart';
 
 void main() async {

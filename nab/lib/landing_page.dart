@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'user_register.dart';
-import 'login.dart';
+import 'user_login.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -10,15 +10,17 @@ class LandingPage extends StatefulWidget {
 }
 
 class _LandingPageState extends State<LandingPage> {
+  static const Color mainGrey = Color(0xFFD9D9D9);
+  static const Color darkGrey = Color(0xFF9A9A9A);
+  static const Color blue = Color(0xFF2C8ED6);
+
+  Color renterButtonColor = blue;
+  Color vendorButtonColor = mainGrey;
+  String role = "renter"; // Default role
   @override
   Widget build(BuildContext context) {
-    // Colors
-    const Color mainGrey = Color(0xFFD9D9D9);
-    const Color darkGrey = Color(0xFF9A9A9A);
-    const Color blue = Color(0xFF2C8ED6);
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromRGBO(247, 247, 247, 1),
       body: SafeArea(
         child: Center(
           child: Column(
@@ -45,7 +47,7 @@ class _LandingPageState extends State<LandingPage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Login()),
+                    MaterialPageRoute(builder: (context) => LoginPage()),
                   );
                 },
                 child: Container(
@@ -80,30 +82,42 @@ class _LandingPageState extends State<LandingPage> {
                   children: [
                     // Vendor Button
                     Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => RegisterPage(role: "vendor"),
+                      child: Material(
+                        color: darkGrey, // Button background color
+                        borderRadius: BorderRadius.circular(
+                          22,
+                        ), // Same radius as the button
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(
+                            22,
+                          ), // Match the ripple radius
+                          highlightColor: Colors.transparent,
+                          splashColor: Colors.white24,
+                          onTap: () {
+                            setState(() {
+                              role = "vendor";
+                              vendorButtonColor = blue;
+                              renterButtonColor = mainGrey;
+                            });
+                          },
+                          child: Container(
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: vendorButtonColor,
+                              borderRadius: BorderRadius.circular(22),
                             ),
-                          );
-                        },
-                        child: Container(
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: mainGrey,
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                          child: Center(
-                            child: Text(
-                              "VENDOR",
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.bold,
-                                color: darkGrey,
-                                fontSize: 16,
+                            child: Center(
+                              child: Text(
+                                "VENDOR",
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      vendorButtonColor == blue
+                                          ? Colors.white
+                                          : darkGrey,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
@@ -114,30 +128,42 @@ class _LandingPageState extends State<LandingPage> {
                     SizedBox(width: 10),
                     // Renter Button (active)
                     Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => RegisterPage(role: "renter"),
+                      child: Material(
+                        color: darkGrey, // Button background color
+                        borderRadius: BorderRadius.circular(
+                          22,
+                        ), // Same radius as the button
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(
+                            22,
+                          ), // Match the ripple radius
+                          highlightColor: Colors.transparent,
+                          splashColor: Colors.white24,
+                          onTap: () {
+                            setState(() {
+                              role = "renter";
+                              renterButtonColor = blue;
+                              vendorButtonColor = mainGrey;
+                            });
+                          },
+                          child: Container(
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: renterButtonColor,
+                              borderRadius: BorderRadius.circular(22),
                             ),
-                          );
-                        },
-                        child: Container(
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: darkGrey,
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                          child: Center(
-                            child: Text(
-                              "RENTER",
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 16,
+                            child: Center(
+                              child: Text(
+                                "CUSTOMER",
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      renterButtonColor == blue
+                                          ? Colors.white
+                                          : darkGrey,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
@@ -145,6 +171,49 @@ class _LandingPageState extends State<LandingPage> {
                       ),
                     ),
                   ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Material(
+                  color: darkGrey, // Button background color
+                  borderRadius: BorderRadius.circular(
+                    22,
+                  ), // Same radius as the button
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(
+                      22,
+                    ), // Match the ripple radius
+                    highlightColor: Colors.transparent,
+                    splashColor:
+                        Colors.white24, // Customize splash color if needed
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RegisterPage(role: role),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      height: 44,
+                      // Remove color here, Material already provides the color
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "REGISTER",
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               Spacer(flex: 1),

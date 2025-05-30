@@ -1,33 +1,28 @@
+import 'dart:developer';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:nab/admin_home_page.dart';
+import 'package:nab/cus_home_page.dart';
+import 'package:nab/utils/user_provider.dart';
 import 'package:nab/utils/auth_wrapper.dart';
 import 'package:flutter/material.dart';
 
-class RegisterPage extends StatefulWidget {
-  final String role;
-  const RegisterPage({super.key, required this.role});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  _RegisterPageState();
+class _LoginPageState extends State<LoginPage> {
+  _LoginPageState();
   final Color mainGrey = Color(0xFFD9D9D9);
   final Color darkGrey = Color(0xFF9A9A9A);
-  String? _dobString;
-  DateTime? _dob;
 
   final List<TextEditingController> _controllers = List.generate(
     6,
     (_) => TextEditingController(),
   );
 
-  final List<String> _placeholders = [
-    "Full Name",
-    "Email",
-    "Date of Birth",
-    "Township",
-    "Username",
-    "Password",
-  ];
+  final List<String> _placeholders = ["Email", "Password"];
 
   int _focusedField = -1; // -1 means none is focused
 
@@ -52,7 +47,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 Image.asset('assets/Nab_Emblem.png', height: 100),
                 SizedBox(height: 10),
                 Text(
-                  "Register",
+                  "Sign In",
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -72,7 +67,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       _bottomButton("BACK", false, _onBackPressed),
                       Spacer(),
                       Spacer(),
-                      _bottomButton("NEXT", true, _onNextPressed),
+                      _bottomButton("LOGIN", true, _onNextPressed),
                     ],
                   ),
                 ),
@@ -86,7 +81,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget _buildInput(int index) {
     final isFocused = index == _focusedField;
-    bool isDobField = _placeholders[index] == "Date of Birth";
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
@@ -98,10 +92,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
         child: Center(
           child: TextField(
-            controller:
-                isDobField
-                    ? TextEditingController(text: _dobString)
-                    : _controllers[index],
+            controller: _controllers[index],
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: isFocused ? Colors.white : Colors.grey[700],
@@ -119,38 +110,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 fontSize: 18,
               ),
             ),
-            readOnly: isDobField,
-            onTap:
-                isDobField
-                    ? () async {
-                      setState(() {
-                        _focusedField = index;
-                      });
-                      DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: _dob ?? DateTime(2000, 1, 1),
-                        firstDate: DateTime(1900),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          _dob = picked;
-                          _dobString =
-                              "${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                        });
-                      }
-                    }
-                    : () {
-                      setState(() {
-                        _focusedField = index;
-                      });
-                    },
-            onChanged:
-                isDobField
-                    ? null
-                    : (_) {
-                      setState(() {});
-                    },
+            onTap: () {
+              setState(() {
+                _focusedField = index;
+              });
+            },
+            onChanged: (_) {
+              setState(() {});
+            },
           ),
         ),
       ),
@@ -183,16 +150,16 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void _onNextPressed() {
+  void _onNextPressed() async {
     AuthWrapper authWrapper = AuthWrapper();
-    _controllers[2].text = _dobString ?? '';
-    try{
-      authWrapper.signUp(_controllers, widget.role);
-    }
-    catch (e) {
-      ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error Signing Up.')));;
+    UserProvider userProvider = UserProvider();
+    try {
+      String uid = await authWrapper.signIn(_controllers);
+      if (!mounted) return;
+      userProvider.redirectUser(context, uid);
+    } catch (e) {
+      log('Error during sign up: $e');
+      // Optionally: show a SnackBar or AlertDialog to the user here
     }
   }
 

@@ -1,8 +1,8 @@
 import 'dart:developer';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/widgets.dart';
 
 class AuthWrapper {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -30,19 +30,27 @@ class AuthWrapper {
     }
   }
 
-  Future<void> signIn(String email, String password) async {
+  Future<String> signIn(List<TextEditingController> details) async {
+    UserCredential crendetials;
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      crendetials = await _auth.signInWithEmailAndPassword(
+        email: details[0].text,
+        password: details[1].text,
+      );
+      return crendetials.user?.uid ?? '';
     } catch (e) {
       log('Error signing in: $e');
     }
+    return '';
   }
 
-  Future<void> signOut() async {
+  Future<void> signOut(BuildContext context) async {
     try {
       await _auth.signOut();
     } catch (e) {
-      log('Error signing out: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unknown user role.')));
     }
   }
 }
