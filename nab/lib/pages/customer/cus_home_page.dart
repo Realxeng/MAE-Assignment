@@ -53,7 +53,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserProvider>().user;
-    log("Building CustomerHomePage for user: ${user?.username ?? "Unknown"}");
     if (user == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
