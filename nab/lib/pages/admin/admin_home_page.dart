@@ -76,7 +76,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
             // Add your profile page navigation here
           },
         ),
-        title: Text('Welcome ${userName ?? 'Admin'}'),
+        title: Text('Welcome $userName'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
