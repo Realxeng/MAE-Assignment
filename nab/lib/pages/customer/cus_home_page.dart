@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:nab/utils/image_provider.dart';
+import 'package:nab/utils/listing_provider.dart';
 
 class CustomerHomePage extends StatefulWidget {
   final String uid;
@@ -166,13 +167,38 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                 ),
               ),
               // Recommendations Section
-              SizedBox(
-                height: 144,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.only(left: 24, right: 12),
-                  children: [_CarCard(title: "Perodua Myvi"), _CarCard()],
-                ),
+              Consumer<ListingProvider>(
+                builder: (context, listingProvider, child) {
+                  final listings = listingProvider.listings;
+                  if (listings.isEmpty) {
+                    return const SizedBox(
+                      height: 144,
+                      child: Center(
+                        child: Text("No recommendations available"),
+                      ),
+                    );
+                  }
+                  return SizedBox(
+                    height: 144,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(left: 24, right: 12),
+                      itemCount: listings.length,
+                      itemBuilder: (context, index) {
+                        final listing = listings[index];
+                        return _CarCard(
+                          title: listing.carModel ?? 'Car Model',
+                          plateNumber: listing.carPlate,
+                          image: MemoryImage(
+                            ImageConstants.constants.decodeBase64(
+                              listing.image ?? '',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
 
               // Past Bookings Title
@@ -243,71 +269,85 @@ class _QuickFilterButton extends StatelessWidget {
 
 class _CarCard extends StatelessWidget {
   final String title;
-  const _CarCard({this.title = "Perodua Myvi"});
+  final String? plateNumber; // car plate number
+  final ImageProvider? image;
+
+  const _CarCard({
+    Key? key,
+    this.title = "Perodua Myvi",
+    this.plateNumber,
+    this.image,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 180,
+      height: 220, // fixed height for consistent layout
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: Colors.white,
         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          // Car image placeholder
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(18),
-                ),
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade100, Colors.green.shade200],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background image (stretched)
+            if (image != null)
+              Image(image: image!, fit: BoxFit.cover)
+            else
+              Container(
+                color: Colors.grey.shade300,
+                child: const Center(
+                  child: Icon(
+                    Icons.directions_car,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: Icon(
-                      Icons.directions_car,
-                      size: 70,
-                      color: Colors.grey.shade300,
+
+            // Description box with transparent background (inside gradient)
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  color: Color.fromRGBO(12, 12, 12, 0.7),
+                  child: Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 2, 18, 9),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (plateNumber != null)
+                            Text(
+                              plateNumber!,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                  Positioned(
-                    bottom: 16,
-                    left: 16,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-          SizedBox(height: 8),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -343,10 +383,11 @@ class _CarBookingCard extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child: Icon(
-                  Icons.directions_car,
-                  size: 55,
-                  color: Colors.grey.shade300,
+                child: Image(
+                  image: AssetImage('assets/Nab_Emblem.png'),
+                  width: 100,
+                  height: 100,
+                  color: Colors.white70,
                 ),
               ),
             ),

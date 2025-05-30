@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/models/listing.dart';
@@ -22,7 +21,7 @@ class ListingProvider extends ChangeNotifier {
     await _listingSubscription?.cancel();
 
     _listingSubscription = FirebaseFirestore.instance
-        .collection('listings')
+        .collection('listing')
         .snapshots()
         .listen(
           (querySnapshot) {
