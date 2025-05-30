@@ -25,7 +25,7 @@ class UserModel {
     return UserModel(
       uid: data['uid'] ?? '',
       role: data['role'] ?? 'Unknown',
-      fullName: data['fullname'],
+      fullName: data['fullName'],
       email: data['email'],
       dob: data['dob'],
       township: data['township'],
@@ -39,7 +39,7 @@ class UserModel {
     return {
       'uid': uid,
       'role': role,
-      'fullname': fullName,
+      'fullName': fullName,
       'email': email,
       'dob': dob,
       'township': township,
