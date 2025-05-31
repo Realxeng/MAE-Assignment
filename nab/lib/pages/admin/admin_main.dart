@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:nab/pages/admin/admin_edit_profile.dart';
 import 'package:nab/pages/admin/admin_home_page.dart';
 import 'package:nab/pages/admin/admin_manage_listings.dart';
 import 'package:nab/pages/admin/admin_view_bookings.dart';
+import 'package:nab/pages/admin/admin_edit_profile.dart';
 
 class AdminMainPage extends StatefulWidget {
   final String uid;
@@ -22,9 +24,9 @@ class _AdminMainPageState extends State<AdminMainPage> {
 
     _pages = [
       AdminHomePage(uid: widget.uid),
-      ManageListingsPage(),    
-      ViewBookingsPage(),    // Your view bookings page as you shared earlier
-      //ViewFeedbacksPage(),   // Your view feedbacks page
+      ManageListingsPage(),
+      ViewBookingsPage(),
+      EditAdminProfilePage(uid: widget.uid),
     ];
   }
 
