@@ -151,12 +151,19 @@ class _LoginPageState extends State<LoginPage> {
     AuthWrapper authWrapper = AuthWrapper();
     UserProvider userProvider = UserProvider();
     try {
-      String uid = await authWrapper.signIn(_controllers);
+      await authWrapper.signIn(_controllers);
       if (!mounted) return;
-      userProvider.redirectUser(context, uid);
+      userProvider.redirectUser(context);
     } catch (e) {
-      log('Error during sign up: $e');
-      // Optionally: show a SnackBar or AlertDialog to the user here
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString(),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

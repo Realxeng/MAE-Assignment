@@ -58,8 +58,9 @@ class UserProvider extends ChangeNotifier {
         );
   }
 
-  void redirectUser(BuildContext context, String uid) async {
+  void redirectUser(BuildContext context) async {
     String role = _userModel?.role ?? 'Unknown';
+    String uid = _userModel?.uid ?? '';
     switch (role) {
       case "renter":
         Navigator.pushReplacement(
