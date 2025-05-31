@@ -82,6 +82,7 @@ class ListingProvider extends ChangeNotifier {
           },
         );
   }
+
   Future<void> fetchAcceptedListings() async {
     await _listingSubscription?.cancel();
 
@@ -104,6 +105,7 @@ class ListingProvider extends ChangeNotifier {
           },
         );
   }
+
   Future<void> fetchRejectedListings() async {
     await _listingSubscription?.cancel();
 
@@ -118,6 +120,28 @@ class ListingProvider extends ChangeNotifier {
                 return await ListingModel.fromDocumentAsync(doc);
               }),
             );
+            notifyListeners();
+          },
+          onError: (error) {
+            _listingModel = [];
+            notifyListeners();
+          },
+        );
+  }
+
+  Future<void> fetchListingsByType(String type) async {
+    await _listingSubscription?.cancel();
+
+    _listingSubscription = FirebaseFirestore.instance
+        .collection('listing')
+        .where('carType', isEqualTo: type.toLowerCase())
+        .snapshots()
+        .listen(
+          (querySnapshot) {
+            _listingModel =
+                querySnapshot.docs
+                    .map((doc) => ListingModel.fromDocument(doc))
+                    .toList();
             notifyListeners();
           },
           onError: (error) {
