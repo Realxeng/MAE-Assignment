@@ -30,8 +30,15 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
   ];
 
   void _searchCarByType(String type) {
-    context.read<ListingProvider>().fetchListingsByType(type);
-    widget.onTabChange?.call(1);
+    final searchType = type.trim();
+    if (searchType.isEmpty) return; // Avoid empty searches
+
+    setState(() {
+      selectedCategory = searchType; // Sync with category UI
+      _searchController.text = searchType;
+    });
+
+    context.read<ListingProvider>().fetchAcceptedListingsByType(type);
   }
 
   @override
@@ -138,7 +145,11 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
                           onTap: () {
                             setState(() {
                               selectedCategory = cat;
+                              _searchController.text = cat;
                             });
+                            context
+                                .read<ListingProvider>()
+                                .fetchAcceptedListingsByType(cat);
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 20),

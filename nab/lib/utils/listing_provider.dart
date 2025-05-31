@@ -60,6 +60,33 @@ class ListingProvider extends ChangeNotifier {
         );
   }
 
+  Future<void> fetchAcceptedListingsByType(String type) async {
+    await _listingSubscription?.cancel();
+
+    _listingSubscription = FirebaseFirestore.instance
+        .collection('listing')
+        .where('status', isEqualTo: 'accepted')
+        .where(
+          'carType',
+          isEqualTo: type.toLowerCase(),
+        ) // assuming your listing has a 'type' field
+        .snapshots()
+        .listen(
+          (querySnapshot) async {
+            _listingModel = await Future.wait(
+              querySnapshot.docs.map((doc) async {
+                return await ListingModel.fromDocumentAsync(doc);
+              }),
+            );
+            notifyListeners();
+          },
+          onError: (error) {
+            _listingModel = [];
+            notifyListeners();
+          },
+        );
+  }
+
   Future<void> fetchPendingListings() async {
     await _listingSubscription?.cancel();
 
