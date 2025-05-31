@@ -49,9 +49,8 @@ class AuthWrapper {
       );
       return crendetials.user?.uid ?? '';
     } catch (e) {
-      log('Error signing in: $e');
+      return 'Error signing in: $e';
     }
-    return '';
   }
 
   Future<void> signOut(BuildContext context) async {

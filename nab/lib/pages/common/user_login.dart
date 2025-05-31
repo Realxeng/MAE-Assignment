@@ -150,7 +150,19 @@ class _LoginPageState extends State<LoginPage> {
     AuthWrapper authWrapper = AuthWrapper();
     UserProvider userProvider = UserProvider();
     try {
-      await authWrapper.signIn(_controllers);
+      String result = await authWrapper.signIn(_controllers);
+      if (result.contains("invalid-credential")) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Invalid credentials. Please try again.",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
       if (!mounted) return;
       userProvider.redirectUser(context);
     } catch (e) {
