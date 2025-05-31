@@ -29,6 +29,11 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
     'Hybrid',
   ];
 
+  void _searchCarByType(String type) {
+    context.read<ListingProvider>().fetchListingsByType(type);
+    widget.onTabChange?.call(1);
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -52,7 +57,7 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
       backgroundColor: Colors.grey[850],
       // App bar with title
       appBar: AppBar(
-        backgroundColor: Colors.grey[300],
+        backgroundColor: const Color.fromARGB(255, 200, 200, 200),
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -71,8 +76,12 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
           children: [
             // Search bar
             Container(
-              color:
-                  Colors.grey[300], // distinct background color for top section
+              color: const Color.fromARGB(
+                255,
+                200,
+                200,
+                200,
+              ), // distinct background color for top section
               child: Column(
                 children: [
                   // Search Bar
@@ -96,6 +105,7 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
                         ),
                         Expanded(
                           child: TextField(
+                            onSubmitted: (value) => _searchCarByType(value),
                             controller: _searchController,
                             decoration: const InputDecoration(
                               hintText: "Search...",
@@ -117,6 +127,7 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
                     height: 40,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 12),
                       itemCount: categories.length,
                       separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemBuilder: (context, index) {

@@ -54,6 +54,11 @@ class _CustomerHomePageState extends State<CustomerHomePage>
     return MemoryImage(ImageConstants.constants.decodeBase64(profileImage));
   }
 
+  void _searchCarByType(String type) {
+    context.read<ListingProvider>().fetchListingsByType(type);
+    widget.onTabChange?.call(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -206,7 +211,7 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                       ),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.grey[800],
                           borderRadius: borderRadius,
                           boxShadow: [
                             BoxShadow(color: Colors.black12, blurRadius: 5),
@@ -216,13 +221,16 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                           children: [
                             const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Icon(Icons.search, color: Colors.grey),
+                              child: Icon(Icons.search, color: Colors.white),
                             ),
                             Expanded(
                               child: TextField(
+                                onSubmitted: (value) => _searchCarByType(value),
+                                style: const TextStyle(color: Colors.white),
                                 decoration: const InputDecoration(
                                   hintText: "Search...",
                                   border: InputBorder.none,
+                                  hintStyle: TextStyle(color: Colors.white),
                                 ),
                               ),
                             ),
@@ -287,14 +295,14 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                         final listings = listingProvider.listings;
                         if (listings.isEmpty) {
                           return const SizedBox(
-                            height: 144,
+                            height: 207,
                             child: Center(
                               child: Text("No recommendations available"),
                             ),
                           );
                         }
                         return SizedBox(
-                          height: 144,
+                          height: 207,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             padding: const EdgeInsets.only(left: 12, right: 12),
@@ -407,16 +415,22 @@ class _QuickFilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 150, 150, 150),
-        borderRadius: BorderRadius.circular(13),
-      ),
-      child: Center(
-        child: Text(
-          text,
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+    return InkWell(
+      onTap: () {},
+      child: Container(
+        height: 52,
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 150, 150, 150),
+          borderRadius: BorderRadius.circular(13),
+        ),
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
         ),
       ),
     );
@@ -428,77 +442,66 @@ class _CarCard extends StatelessWidget {
   final String? plateNumber; // car plate number
   final ImageProvider? image;
 
-  const _CarCard({this.title = "Perodua Myvi", this.plateNumber, this.image});
+  const _CarCard({this.title = "Toyota Avanza", this.plateNumber, this.image});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 180,
-      height: 220, // fixed height for consistent layout
+      width: 200,
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
+        color: Colors.grey[900],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Background image (stretched)
-            if (image != null)
-              Image(image: image!, fit: BoxFit.cover)
-            else
-              Container(
-                color: Colors.grey.shade300,
-                child: const Center(
-                  child: Icon(
-                    Icons.directions_car,
-                    size: 80,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-
-            // Description box with transparent background (inside gradient)
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  color: Color.fromRGBO(12, 12, 12, 0.7),
-                  child: Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 2, 18, 9),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          if (plateNumber != null)
-                            Text(
-                              plateNumber!,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                              ),
-                            ),
-                        ],
-                      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Image with rounded top corners
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child:
+                image != null
+                    ? Image(image: image!, height: 150, fit: BoxFit.cover)
+                    : Container(
+                      height: 150,
+                      color: Colors.grey.shade300,
+                      child: const Icon(Icons.directions_car, size: 60),
                     ),
+          ),
+
+          // Bottom dark container with text and rounded bottom corners
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(12),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 4),
+                if (plateNumber != null)
+                  Text(
+                    plateNumber!,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -521,7 +524,7 @@ class _CarBookingCard extends StatelessWidget {
       width: 140,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: Colors.white,
+        color: Colors.grey[900],
         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
       ),
       child: Column(
@@ -540,7 +543,7 @@ class _CarBookingCard extends StatelessWidget {
                         width: double.infinity,
                       )
                       : Container(
-                        color: Colors.grey.shade300,
+                        color: Colors.grey[900],
                         child: const Center(
                           child: Icon(Icons.directions_car, size: 60),
                         ),
@@ -554,7 +557,7 @@ class _CarBookingCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Colors.white,
               ),
             ),
           ),
