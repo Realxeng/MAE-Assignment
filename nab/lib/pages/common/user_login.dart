@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:nab/utils/user_provider.dart';
 import 'package:nab/utils/auth_wrapper.dart';
 import 'package:flutter/material.dart';
