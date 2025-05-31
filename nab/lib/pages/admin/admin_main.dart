@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nab/pages/admin/admin_home_page.dart';
-import 'package:nab/pages/admin/admin_verify_listings.dart';
+import 'package:nab/pages/admin/admin_manage_listings.dart';
 import 'package:nab/pages/admin/admin_view_bookings.dart';
 
 class AdminMainPage extends StatefulWidget {
@@ -22,8 +22,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
 
     _pages = [
       AdminHomePage(uid: widget.uid),
-      //VerifyListingsPage(),        // Your home page for admin
-      //ManageUsersPage(),     // Your manage users page
+      ManageListingsPage(),    
       ViewBookingsPage(),    // Your view bookings page as you shared earlier
       //ViewFeedbacksPage(),   // Your view feedbacks page
     ];
@@ -63,9 +62,9 @@ class _AdminMainPageState extends State<AdminMainPage> {
           BottomNavigationBarItem(
             icon: Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: Icon(Icons.people),
+              child: Icon(Icons.car_rental, size: 30),
             ),
-            label: 'Manage Users',
+            label: 'Manage Listings',
           ),
           BottomNavigationBarItem(
             icon: Padding(
@@ -77,7 +76,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
           BottomNavigationBarItem(
             icon: Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: Icon(Icons.account_circle, size: 30),
+              child: Icon(Icons.account_circle, size: 25),
             ),
             label: 'Profile',
           ),

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:nab/utils/booking_provider.dart';
 import 'package:nab/utils/image_provider.dart';
@@ -28,7 +27,7 @@ class _ViewBookingsPageState extends State<ViewBookingsPage> with AutomaticKeepA
         foregroundColor: Colors.black87,
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFF5F5F5),  // soft off-white background
+      backgroundColor: Colors.grey[850],
       body: Column(
         children: [
           const SizedBox(height: 12),
@@ -70,7 +69,7 @@ class _ViewBookingsPageState extends State<ViewBookingsPage> with AutomaticKeepA
                     return Container(
                       margin: const EdgeInsets.only(bottom: 14),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Colors.grey[900],
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: const Color.fromRGBO(68, 138, 255, 0.3)),
                         boxShadow: [
@@ -114,7 +113,7 @@ class _ViewBookingsPageState extends State<ViewBookingsPage> with AutomaticKeepA
                             width: double.infinity,
                             child: TextButton(
                               style: TextButton.styleFrom(
-                                backgroundColor: Colors.grey[300],
+                                backgroundColor: Colors.blueAccent,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(24)),
                                 padding:

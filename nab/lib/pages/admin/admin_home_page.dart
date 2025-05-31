@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/utils/user_provider.dart';
-import 'package:nab/pages/admin/admin_verify_listings.dart';
+import 'package:nab/pages/admin/admin_manage_listings.dart';
 import 'package:nab/pages/admin/admin_view_bookings.dart';
 import 'package:provider/provider.dart';
 
@@ -89,6 +89,7 @@ class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveCl
         ),
         title: Text('Welcome $userName'),
       ),
+      backgroundColor: Colors.grey[850],
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -101,7 +102,7 @@ class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveCl
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const VerifyListingsPage(),
+                    builder: (context) => const ManageListingsPage(),
                   ),
                 );
               },
