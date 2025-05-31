@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/models/listing.dart';
-import 'package:nab/models/user.dart';
 
 class ListingProvider extends ChangeNotifier {
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _listingSubscription;
@@ -71,7 +70,7 @@ class ListingProvider extends ChangeNotifier {
         .listen(
           (querySnapshot) async {
             _listingModel = await Future.wait(
-                querySnapshot.docs.map((doc) async {
+              querySnapshot.docs.map((doc) async {
                 return await ListingModel.fromDocumentAsync(doc);
               }),
             );
