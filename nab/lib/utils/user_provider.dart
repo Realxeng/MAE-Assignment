@@ -58,9 +58,28 @@ class UserProvider extends ChangeNotifier {
         );
   }
 
-  void redirectUser(BuildContext context) async {
+  Future<void> redirectUser(BuildContext context) async {
+    // Wait for user data to load with timeout
+    const timeout = Duration(seconds: 5);
+    final stopwatch = Stopwatch()..start();
+
+    // Wait until _userModel is non-null or timeout
+    while (_userModel == null && stopwatch.elapsed < timeout) {
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+    stopwatch.stop();
+
+    if (_userModel == null) {
+      // Still null after waiting: show an error or just return
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load user data. Please try again.')),
+      );
+      return;
+    }
+
     String role = _userModel?.role ?? 'Unknown';
     String uid = _userModel?.uid ?? '';
+
     switch (role) {
       case "renter":
         Navigator.pushReplacement(
@@ -81,7 +100,6 @@ class UserProvider extends ChangeNotifier {
         );
         break;
       default:
-        // Handle unexpected role or display an error
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Unknown user role.')));
