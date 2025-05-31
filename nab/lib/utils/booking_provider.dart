@@ -77,4 +77,26 @@ class BookingProvider extends ChangeNotifier {
           },
         );
   }
+  Future<void> fetchBookingFromStatus(String status) async {
+    await _bookingSubscription?.cancel();
+
+    _bookingSubscription = FirebaseFirestore.instance
+        .collection('bookings')
+        .where('status', isEqualTo: status)
+        .snapshots()
+        .listen(
+          (querySnapshot) async {
+            _bookings = await Future.wait(
+              querySnapshot.docs.map((doc) async {
+                return await BookingModel.fromDocumentAsync(doc);
+              }),
+            );
+            notifyListeners();
+          },
+          onError: (error) {
+            _bookings = [];
+            notifyListeners();
+          },
+        );
+  }
 }

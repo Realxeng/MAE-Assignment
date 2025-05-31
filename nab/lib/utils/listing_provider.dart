@@ -82,4 +82,48 @@ class ListingProvider extends ChangeNotifier {
           },
         );
   }
+  Future<void> fetchAcceptedListings() async {
+    await _listingSubscription?.cancel();
+
+    _listingSubscription = FirebaseFirestore.instance
+        .collection('listing')
+        .where('status', isEqualTo: 'accepted')
+        .snapshots()
+        .listen(
+          (querySnapshot) async {
+            _listingModel = await Future.wait(
+              querySnapshot.docs.map((doc) async {
+                return await ListingModel.fromDocumentAsync(doc);
+              }),
+            );
+            notifyListeners();
+          },
+          onError: (error) {
+            _listingModel = [];
+            notifyListeners();
+          },
+        );
+  }
+  Future<void> fetchRejectedListings() async {
+    await _listingSubscription?.cancel();
+
+    _listingSubscription = FirebaseFirestore.instance
+        .collection('listing')
+        .where('status', isEqualTo: 'rejected')
+        .snapshots()
+        .listen(
+          (querySnapshot) async {
+            _listingModel = await Future.wait(
+              querySnapshot.docs.map((doc) async {
+                return await ListingModel.fromDocumentAsync(doc);
+              }),
+            );
+            notifyListeners();
+          },
+          onError: (error) {
+            _listingModel = [];
+            notifyListeners();
+          },
+        );
+  }
 }
