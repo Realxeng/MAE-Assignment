@@ -4,6 +4,7 @@ import 'package:nab/utils/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/listing_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CustomerHomePage extends StatefulWidget {
   final String uid;
@@ -102,7 +103,17 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(30),
-                        onTap: () {},
+                        onTap: () async {
+                          try {
+                            await triggerSOSCall();
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Failed to make SOS call: $e"),
+                              ),
+                            );
+                          }
+                        },
                         child: Container(
                           decoration: const BoxDecoration(
                             color: Colors.red,
@@ -295,6 +306,16 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         ],
       ),
     );
+  }
+
+  Future<void> triggerSOSCall() async {
+    final Uri emergencyUri = Uri(scheme: 'tel', path: '911');
+
+    if (await canLaunchUrl(emergencyUri)) {
+      await launchUrl(emergencyUri, mode: LaunchMode.externalApplication);
+    } else {
+      print('Could not launch phone dialer.');
+    }
   }
 }
 
