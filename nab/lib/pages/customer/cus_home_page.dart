@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/listing_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'cus_explore.dart';
 
 class CustomerHomePage extends StatefulWidget {
   final String uid;
@@ -14,8 +15,13 @@ class CustomerHomePage extends StatefulWidget {
   State<CustomerHomePage> createState() => _CustomerHomePageState();
 }
 
-class _CustomerHomePageState extends State<CustomerHomePage> {
+class _CustomerHomePageState extends State<CustomerHomePage>
+    with AutomaticKeepAliveClientMixin<CustomerHomePage> {
   bool _hasFetchedBookings = false;
+  int _selectedIndex = 0;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -51,11 +57,13 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final user = context.watch<UserProvider>().user;
     if (user == null) {
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final username = user.username ?? "User";
+    final fullName = user.fullName ?? "";
     const borderRadius = BorderRadius.all(Radius.circular(16));
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -68,67 +76,75 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
               // Header Section: Welcome and SOS button
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 26,
-                      backgroundImage: _getProfileImage(),
-                      backgroundColor: Colors.grey[200],
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Welcome!",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            username,
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 15,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ],
+                child: Container(
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundImage: _getProfileImage(),
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          85,
+                          160,
+                          222,
+                        ),
                       ),
-                    ),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(30),
-                        onTap: () async {
-                          try {
-                            await triggerSOSCall();
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Failed to make SOS call: $e"),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              username,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color.fromRGBO(21, 21, 21, 1),
                               ),
-                            );
-                          }
-                        },
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            children: [
-                              Icon(Icons.sos, color: Colors.white, size: 30),
-                            ],
+                            ),
+                            Text(
+                              fullName,
+                              style: TextStyle(
+                                color: const Color.fromARGB(255, 150, 150, 150),
+                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(30),
+                          onTap: () async {
+                            try {
+                              await triggerSOSCall();
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Failed to make SOS call: $e"),
+                                ),
+                              );
+                            }
+                          },
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              children: [
+                                Icon(Icons.sos, color: Colors.white, size: 30),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
@@ -292,19 +308,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 0,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notification',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
     );
   }
 
@@ -329,7 +332,7 @@ class _QuickFilterButton extends StatelessWidget {
     return Container(
       height: 52,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: const Color.fromARGB(255, 200, 200, 200),
         borderRadius: BorderRadius.circular(13),
       ),
       child: Center(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:nab/pages/customer/cus_main.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:nab/pages/common/landing_page.dart';
 
@@ -66,10 +67,11 @@ class _AuthRouterState extends State<AuthRouter> {
               );
               break;
             case "renter":
-              Navigator.pushReplacementNamed(
+              Navigator.pushReplacement(
                 context,
-                '/customerHome',
-                arguments: {'uid': user.uid},
+                MaterialPageRoute(
+                  builder: (_) => CustomerMainPage(uid: user.uid),
+                ),
               );
               break;
             case "vendor":
