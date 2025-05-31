@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/utils/image_provider.dart';
+import 'package:nab/utils/listing_provider.dart';
+import 'package:provider/provider.dart';
 
 class VerifyListingsPage extends StatefulWidget {
   const VerifyListingsPage({super.key});
@@ -13,6 +15,21 @@ class VerifyListingsPage extends StatefulWidget {
 class _VerifyListingsPageState extends State<VerifyListingsPage> {
   final Set<String> _expandedDocIds = {};
   final ImageConstants image_provider = ImageConstants.constants;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch listings when the page is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ListingProvider>(context, listen: false).fetchPendingListings();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    context.read<ListingProvider>().fetchPendingListings();
+  }
 
   void toggleExpand(String docId) {
     setState(() {
@@ -93,41 +110,30 @@ class _VerifyListingsPageState extends State<VerifyListingsPage> {
       appBar: AppBar(
         title: const Text('Verify Listings'),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('listing')
-            .where('status', isEqualTo: 'pending')
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text('Error loading listings'));
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          var docs = snapshot.data!.docs;
+      body: Consumer<ListingProvider>(
+        builder: (context, listingProvider, child) {
+          final docs = listingProvider.listings;
 
           if (docs.isEmpty) {
             return const Center(child: Text('No listings found.'));
           }
-
+    
           return ListView.builder( 
             padding: const EdgeInsets.all(16),
             itemCount: docs.length,
             itemBuilder: (context, index) {
-              var doc = docs[index];
-              var data = doc.data()! as Map<String, dynamic>;
+              var data = docs[index];
+              final user = data.user;
 
-              final username = data['username'] ?? 'N/A';
-              final carModel = data['carModel'] ?? 'N/A';
-              final carPlate = data['carPlate'] ?? 'N/A';
-              final status = data['status'] ?? 'Pending';
-              final vehicleCondition = data['vehicleCondition'] ?? 'Unknown';
-              final attachmentUrl = data['attachments'] as String?;
-              final vehicleImageUrl = data['image'] as String?;
-              final contactNumber = data['contactNumber'] ?? 'N/A';
-              final isExpanded = _expandedDocIds.contains(doc.id);
+              final username = user?.username ?? 'N/A';
+              final carModel = data.carModel ?? 'N/A';
+              final carPlate = data.carPlate ?? 'N/A';
+              final status = data.status ?? 'Pending';
+              final vehicleCondition = data.vehicleCondition ?? 'Unknown';
+              final attachmentUrl = data.attachments;
+              final vehicleImageUrl = data.image;
+              final contactNumber = data.contactNumber ?? 'N/A';
+              final isExpanded = _expandedDocIds.contains(data.id);
 
               bool isActionDone = status == 'accepted' || status == 'rejected';
 
@@ -170,7 +176,7 @@ class _VerifyListingsPageState extends State<VerifyListingsPage> {
                               child: ElevatedButton(
                                 onPressed: isActionDone
                                     ? null
-                                    : () => updateStatus(doc.id, 'Accepted'),
+                                    : () => updateStatus(data.id!, 'Accepted'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                 ),
@@ -182,7 +188,7 @@ class _VerifyListingsPageState extends State<VerifyListingsPage> {
                               child: ElevatedButton(
                                 onPressed: isActionDone
                                     ? null
-                                    : () => updateStatus(doc.id, 'Rejected'),
+                                    : () => updateStatus(data.id!, 'Rejected'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red,
                                 ),
@@ -200,7 +206,7 @@ class _VerifyListingsPageState extends State<VerifyListingsPage> {
                             backgroundColor: Colors.blueAccent,
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                           ),
-                          onPressed: () => toggleExpand(doc.id),
+                          onPressed: () => toggleExpand(data.id!),
                           child: Text(
                             isExpanded ? 'COLLAPSE' : 'EXPAND',
                             style: const TextStyle(color: Colors.white),
