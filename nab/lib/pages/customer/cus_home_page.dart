@@ -8,8 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 class CustomerHomePage extends StatefulWidget {
   final String uid;
-  final VoidCallback? onChangeTab;
-  const CustomerHomePage({super.key, required this.uid, this.onChangeTab});
+  final void Function(int)? onTabChange;
+  const CustomerHomePage({super.key, required this.uid, this.onTabChange});
 
   @override
   State<CustomerHomePage> createState() => _CustomerHomePageState();
@@ -86,7 +86,7 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           InkWell(
-                            onTap: () => widget.onChangeTab?.call(),
+                            onTap: () => widget.onTabChange?.call(3),
                             child: Container(
                               padding: const EdgeInsets.only(
                                 left: 2,

@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 
 class CustomerExplorePage extends StatefulWidget {
   final String uid;
-  final VoidCallback? onChangeTab;
-  const CustomerExplorePage({super.key, required this.uid, this.onChangeTab});
+  final void Function(int)? onTabChange;
+  const CustomerExplorePage({super.key, required this.uid, this.onTabChange});
 
   @override
   bool get wantKeepAlive => true;

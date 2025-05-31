@@ -20,14 +20,8 @@ class _CustomerMainPageState extends State<CustomerMainPage> {
     super.initState();
 
     _pages = [
-      CustomerHomePage(
-        uid: widget.uid,
-        onChangeTab: () => _customerHomeToExplore(),
-      ),
-      CustomerExplorePage(
-        uid: widget.uid,
-        onChangeTab: () => _customerHomeToExplore(),
-      ),
+      CustomerHomePage(uid: widget.uid, onTabChange: _onTabChange),
+      CustomerExplorePage(uid: widget.uid, onTabChange: _onTabChange),
       //CustomerNotificationPage(uid: widget.uid),
       //CustomerProfilePage(uid: widget.uid),
     ];
@@ -41,10 +35,12 @@ class _CustomerMainPageState extends State<CustomerMainPage> {
     }
   }
 
-  _customerHomeToExplore() {
-    setState(() {
-      _selectedIndex = 1; // switch to Explore tab
-    });
+  void _onTabChange(int index) {
+    if (_selectedIndex != index) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
