@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nab/pages/admin/admin_main.dart';
 import 'package:nab/utils/user_provider.dart';
-import 'package:nab/pages/admin/admin_manage_listings.dart';
-import 'package:nab/pages/admin/admin_view_bookings.dart';
 import 'package:provider/provider.dart';
 
 class AdminHomePage extends StatefulWidget {
@@ -16,7 +13,6 @@ class AdminHomePage extends StatefulWidget {
 }
 
 class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveClientMixin<AdminHomePage> {
-  int _selectedIndex = 0;
   int activeBookings = 0;
   int vehiclesToVerify = 0;
   int numOfUsers = 0;
@@ -66,7 +62,7 @@ class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveCl
       });
     });
 
-        _usersSubscription = FirebaseFirestore.instance
+    _usersSubscription = FirebaseFirestore.instance
         .collection('users')
         .snapshots()
         .listen((snapshot) {
@@ -80,6 +76,7 @@ class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveCl
   void dispose() {
     _bookingsSubscription.cancel();
     _vehiclesSubscription.cancel();
+    _usersSubscription.cancel();
     super.dispose();
   }
 

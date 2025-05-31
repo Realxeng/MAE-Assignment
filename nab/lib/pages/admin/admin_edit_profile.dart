@@ -1,6 +1,5 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/user_provider.dart';
@@ -8,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 
 class EditAdminProfilePage extends StatefulWidget {
-  final String uid; // <-- Add this parameter
+  final String uid;
   const EditAdminProfilePage({super.key, required this.uid});
 
   @override
@@ -28,97 +27,84 @@ class _EditAdminProfilePageState extends State<EditAdminProfilePage> {
   String? _fullName;
   DateTime? _dob;
 
-  bool _isLoading = false;
+  bool _isLoading = true; // start as loading
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    // Fetch user data using UserProvider on widget load:
+    WidgetsBinding.instance.addPostFrameCallback((_) => _fetchUserData(widget.uid));
   }
 
-  // Use widget.uid (from constructor) instead of currentUser.uid
-  Future<void> _loadUserData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final uid = widget.uid; // Get uid passed to widget
-      
-      final docSnapshot =
-          await FirebaseFirestore.instance.collection('Users').doc(uid).get();
-
-      if (!docSnapshot.exists) {
-        throw Exception('User data not found');
-      }
-
-      final data = docSnapshot.data()!;
-
-      setState(() {
-        _usernameController.text = data['username'] ?? '';
-        _emailController.text = data['email'] ?? '';
-        _townshipController.text = data['township'] ?? '';
-        _profileImageBase64 = data['profilePicture'];
-        _fullName = data['fullName'] ?? '';
-
-        Timestamp? dobTimestamp = data['dob'] as Timestamp?;
-        if (dobTimestamp != null) {
-          _dob = dobTimestamp.toDate();
-        }
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load user data: $e')),
-        );
-      }
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+Future<void> _fetchUserData(String uid) async {
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  try {
+    await userProvider.fetchUserData(uid);
+    final user = userProvider.user;
+    if (user != null) {
+      _usernameController.text = user.username ?? '';
+      _emailController.text = user.email ?? '';
+      _townshipController.text = user.township ?? '';
+      _profileImageBase64 = user.profileImage;
+      _fullName = user.fullName ?? '';
+      _dob = user.dob != null ? DateTime.tryParse(user.dob!) : null;
     }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load user data: $e')),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
 
-  // When submitting changes, you may want to verify that the uid matches current logged-in user
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isSaving = true);
+  setState(() => _isSaving = true);
 
-    final updatedUsername = _usernameController.text.trim();
-    final updatedEmail = _emailController.text.trim();
-    final updatedTownship = _townshipController.text.trim();
-
-    try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-      // If you want to restrict updates to the logged-in user only,
-      // you could check here if widget.uid == userProvider.currentUser.uid
-
-      await userProvider.updateUserProfile(
-        email: updatedEmail,
-        username: updatedUsername,
-        township: updatedTownship,
-        profilePictureFile: _pickedImageFile,
-      );
-
-      if (!mounted) return;
+  final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+  if (widget.uid != currentUserUid) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully')),
+        const SnackBar(content: Text('You can only update your own profile.')),
       );
-
-      await _loadUserData();
-      _pickedImageFile = null;
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update profile: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
     }
+    setState(() => _isSaving = false);
+    return;
   }
+
+  try {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    await userProvider.updateUserProfile(
+      email: _emailController.text.trim(),
+      username: _usernameController.text.trim(),
+      township: _townshipController.text.trim(),
+      profilePictureFile: _pickedImageFile,
+    );
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Profile updated successfully')),
+    );
+
+    await _fetchUserData(widget.uid);
+
+    _pickedImageFile = null;
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to update profile: $e')),
+    );
+  } finally {
+    if (mounted) setState(() => _isSaving = false);
+  }
+}
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(
@@ -230,6 +216,7 @@ class _EditAdminProfilePageState extends State<EditAdminProfilePage> {
 
                         _buildReadOnlyField('Full Name', _fullName ?? ''),
                         const SizedBox(height: 12),
+
                         _buildReadOnlyField('Date of Birth', dobFormatted),
                         const SizedBox(height: 12),
 
@@ -247,6 +234,7 @@ class _EditAdminProfilePageState extends State<EditAdminProfilePage> {
                           },
                         ),
                         const SizedBox(height: 12),
+
                         TextFormField(
                           controller: _emailController,
                           decoration: _inputDecoration('Email'),
@@ -263,6 +251,7 @@ class _EditAdminProfilePageState extends State<EditAdminProfilePage> {
                           },
                         ),
                         const SizedBox(height: 12),
+
                         TextFormField(
                           controller: _townshipController,
                           decoration: _inputDecoration('Township'),
@@ -274,6 +263,7 @@ class _EditAdminProfilePageState extends State<EditAdminProfilePage> {
                           },
                         ),
                         const SizedBox(height: 32),
+
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -282,6 +272,7 @@ class _EditAdminProfilePageState extends State<EditAdminProfilePage> {
                           ),
                         ),
                         const SizedBox(height: 24),
+
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
