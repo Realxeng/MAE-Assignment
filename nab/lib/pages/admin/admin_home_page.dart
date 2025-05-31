@@ -96,7 +96,8 @@ class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveCl
             size: 48,
           ), 
           onPressed: () {
-            // Profile navigation if needed
+            UserProvider userProvider = context.read<UserProvider>();
+            userProvider.signOut();
           },
         ),
         title: Text('Welcome $userName'),
