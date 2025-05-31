@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:nab/models/user.dart';
 
 class ListingModel {
   final String? id;
@@ -11,6 +13,7 @@ class ListingModel {
   final String? uid;
   final String? username;
   final String? vehicleCondition;
+  UserModel? user;
 
   ListingModel({
     this.id,
@@ -23,6 +26,7 @@ class ListingModel {
     this.uid,
     this.username,
     this.vehicleCondition,
+    this.user,
   });
 
   factory ListingModel.fromDocument(DocumentSnapshot doc) {
@@ -35,11 +39,31 @@ class ListingModel {
       contactNumber: data['contactNumber'],
       image: data['image'],
       status: data['status'],
-      uid: data['uid'],
-      username: data['username'],
       vehicleCondition: data['vehicleCondition'],
     );
   }
+
+  static Future<ListingModel> fromDocumentAsync(DocumentSnapshot data) async {
+  final userRef = data['user'] as DocumentReference?;
+  UserModel? user;
+
+  if (userRef != null) {
+    final userSnap = await userRef.get();
+    user = UserModel.fromDocument(userSnap);
+  }
+
+  return ListingModel(
+    id: data.id,
+    attachments: data['attachments'],
+    carModel: data['carModel'],
+    carPlate: data['carPlate'],
+    contactNumber: data['contactNumber'] as int?,
+    image: data['image'],
+    status: data['status'],
+    vehicleCondition: data['vehicleCondition'],
+    user: user,
+  );
+}
 
   Map<String, dynamic> toJson() {
     return {

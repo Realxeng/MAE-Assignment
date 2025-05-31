@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/models/listing.dart';
+import 'package:nab/models/user.dart';
 
 class ListingProvider extends ChangeNotifier {
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _listingSubscription;
@@ -51,6 +52,29 @@ class ListingProvider extends ChangeNotifier {
                 querySnapshot.docs
                     .map((doc) => ListingModel.fromDocument(doc))
                     .toList();
+            notifyListeners();
+          },
+          onError: (error) {
+            _listingModel = [];
+            notifyListeners();
+          },
+        );
+  }
+
+  Future<void> fetchPendingListings() async {
+    await _listingSubscription?.cancel();
+
+    _listingSubscription = FirebaseFirestore.instance
+        .collection('listing')
+        .where('status', isEqualTo: 'pending')
+        .snapshots()
+        .listen(
+          (querySnapshot) async {
+            _listingModel = await Future.wait(
+                querySnapshot.docs.map((doc) async {
+                return await ListingModel.fromDocumentAsync(doc);
+              }),
+            );
             notifyListeners();
           },
           onError: (error) {
