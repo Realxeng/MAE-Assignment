@@ -179,6 +179,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onBackPressed() {
-    Navigator.pop(context);
+    if (Navigator.of(context).canPop()) {
+      Navigator.pop(context);
+    }
+    Navigator.pushNamed(context, '/landing');
   }
 }
