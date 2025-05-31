@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // needed for Timestamp if not imported
 import 'package:nab/utils/booking_provider.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:provider/provider.dart';
