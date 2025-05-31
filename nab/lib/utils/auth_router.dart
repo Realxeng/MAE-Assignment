@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:nab/pages/admin/admin_main.dart';
 import 'package:nab/pages/customer/cus_main.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:nab/pages/common/landing_page.dart';
@@ -60,10 +61,11 @@ class _AuthRouterState extends State<AuthRouter> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           switch (userModel.role) {
             case "admin":
-              Navigator.pushReplacementNamed(
+              Navigator.pushReplacement(
                 context,
-                '/adminHome',
-                arguments: {'uid': user.uid},
+                MaterialPageRoute(
+                  builder: (_) => AdminMainPage(uid: user.uid),
+                ),
               );
               break;
             case "renter":

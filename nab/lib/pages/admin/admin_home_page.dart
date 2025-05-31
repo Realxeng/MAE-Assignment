@@ -14,7 +14,7 @@ class AdminHomePage extends StatefulWidget {
   State<AdminHomePage> createState() => _AdminHomePageState();
 }
 
-class _AdminHomePageState extends State<AdminHomePage> {
+class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveClientMixin<AdminHomePage> {
   int _selectedIndex = 0;
   int activeBookings = 0;
   int vehiclesToVerify = 0;
@@ -32,6 +32,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
       Navigator.pushReplacementNamed(context, '/login');
     };
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -68,36 +71,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
     super.dispose();
   }
 
-  void _onItemTapped(int index) {
-  setState(() {
-    _selectedIndex = index;
-  });
-
-  switch (index) {
-    case 0:
-      //stay in homepage
-      break;
-
-    case 1:
-      // Navigate to Manage Users page
-      break;
-
-    case 2:
-      // Navigate to View Bookings page
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ViewBookingsPage()),
-      );
-      break;
-
-    case 3:
-      // Navigate to View Feedbacks page
-      break;
-  }
-}
-
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Ensure the mixin's build method is called
     final userProvider = context.watch<UserProvider>();
     userName = userProvider.user?.username ?? "User";
     return Scaffold(
@@ -132,45 +108,6 @@ class _AdminHomePageState extends State<AdminHomePage> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.grey[900],
-        showUnselectedLabels: true, 
-        items: [
-          BottomNavigationBarItem(
-            icon: Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Icon(Icons.home),
-            ),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Icon(Icons.people),
-            ),
-            label: 'Manage Users',
-          ),
-          BottomNavigationBarItem(
-            icon: Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Icon(Icons.calendar_today),
-            ),
-            label: 'View Bookings',
-          ),
-          BottomNavigationBarItem(
-            icon: Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Icon(Icons.feedback),
-            ),
-            label: 'View Feedbacks',
-          ),
-        ],
       ),
     );
   }
