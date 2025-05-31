@@ -9,8 +9,6 @@ class CustomerExplorePage extends StatefulWidget {
   const CustomerExplorePage({super.key, required this.uid, this.onTabChange});
 
   @override
-  bool get wantKeepAlive => true;
-  @override
   State<CustomerExplorePage> createState() => _CustomerExplorePageState();
 }
 
