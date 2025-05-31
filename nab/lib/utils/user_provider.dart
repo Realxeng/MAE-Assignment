@@ -46,6 +46,7 @@ class UserProvider extends ChangeNotifier {
             if (querySnapshot.docs.isNotEmpty) {
               final userDoc = querySnapshot.docs.first;
               _userModel = UserModel.fromDocument(userDoc);
+              print('User document data: ${userDoc.data()}');
             } else {
               _userModel = null;
             }
@@ -145,9 +146,9 @@ class UserProvider extends ChangeNotifier {
     }
 
     await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(userId)
-        .update(updatedData);
+    .collection('users')
+    .doc(userId)
+    .set(updatedData, SetOptions(merge: true));
 
     return true;
   }
