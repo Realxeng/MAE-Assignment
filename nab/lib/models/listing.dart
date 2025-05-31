@@ -7,6 +7,7 @@ class ListingModel {
   final String? attachments;
   final String? carModel;
   final String? carPlate;
+  final String? carType;
   final int? contactNumber;
   final String? image;
   final String? status;
@@ -20,6 +21,7 @@ class ListingModel {
     this.attachments,
     this.carModel,
     this.carPlate,
+    this.carType,
     this.contactNumber,
     this.image,
     this.status,
@@ -36,6 +38,7 @@ class ListingModel {
       attachments: data['attachments'],
       carModel: data['carModel'],
       carPlate: data['carPlate'],
+      carType: data['carType'],
       contactNumber: data['contactNumber'],
       image: data['image'],
       status: data['status'],
@@ -44,32 +47,34 @@ class ListingModel {
   }
 
   static Future<ListingModel> fromDocumentAsync(DocumentSnapshot data) async {
-  final userRef = data['user'] as DocumentReference?;
-  UserModel? user;
+    final userRef = data['user'] as DocumentReference?;
+    UserModel? user;
 
-  if (userRef != null) {
-    final userSnap = await userRef.get();
-    user = UserModel.fromDocument(userSnap);
+    if (userRef != null) {
+      final userSnap = await userRef.get();
+      user = UserModel.fromDocument(userSnap);
+    }
+
+    return ListingModel(
+      id: data.id,
+      attachments: data['attachments'],
+      carModel: data['carModel'],
+      carPlate: data['carPlate'],
+      carType: data['carType'],
+      contactNumber: data['contactNumber'] as int?,
+      image: data['image'],
+      status: data['status'],
+      vehicleCondition: data['vehicleCondition'],
+      user: user,
+    );
   }
-
-  return ListingModel(
-    id: data.id,
-    attachments: data['attachments'],
-    carModel: data['carModel'],
-    carPlate: data['carPlate'],
-    contactNumber: data['contactNumber'] as int?,
-    image: data['image'],
-    status: data['status'],
-    vehicleCondition: data['vehicleCondition'],
-    user: user,
-  );
-}
 
   Map<String, dynamic> toJson() {
     return {
       'attachments': attachments,
       'carModel': carModel,
       'carPlate': carPlate,
+      'carType': carType,
       'contactNumber': contactNumber,
       'image': image,
       'status': status,
