@@ -70,7 +70,7 @@ class ListingProvider extends ChangeNotifier {
         .listen(
           (querySnapshot) async {
             _listingModel = await Future.wait(
-                querySnapshot.docs.map((doc) async {
+              querySnapshot.docs.map((doc) async {
                 return await ListingModel.fromDocumentAsync(doc);
               }),
             );

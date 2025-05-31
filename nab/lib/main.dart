@@ -52,7 +52,6 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Nab',
-      // Use home only, no initialRoute since we rely on AuthRouter deciding where to go.
       home: AuthRouter(),
       routes: {
         '/landing': (context) => LandingPage(),

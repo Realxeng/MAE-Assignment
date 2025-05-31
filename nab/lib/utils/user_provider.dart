@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:nab/pages/customer/cus_home_page.dart';
 import 'package:nab/pages/admin/admin_home_page.dart';
 import 'package:nab/pages/vendor/vendor_home_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/models/user.dart';
+import 'package:nab/utils/image_provider.dart';
 
 class UserProvider extends ChangeNotifier {
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _userSubscription;
@@ -83,5 +85,58 @@ class UserProvider extends ChangeNotifier {
           context,
         ).showSnackBar(SnackBar(content: Text('Unknown user role.')));
     }
+  }
+
+  Future<bool> updateUserProfile({
+    required String email,
+    required String username,
+    required String township,
+    File? profilePictureFile, // optional image file
+  }) async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      throw Exception('No user is currently logged in.');
+    }
+
+    String userId = currentUser.uid;
+
+    // Update email in Firebase Auth if changed
+    if (email != currentUser.email) {
+      await currentUser.updateEmail(email);
+      await currentUser.reload();
+    }
+
+    String? profilePictureBase64;
+
+    if (profilePictureFile != null) {
+      profilePictureBase64 = ImageConstants.constants.convertToBase64(
+        profilePictureFile,
+      );
+    }
+
+    Map<String, dynamic> updatedData = {
+      'email': email,
+      'username': username,
+      'township': township,
+    };
+
+    if (profilePictureBase64 != null && profilePictureBase64.isNotEmpty) {
+      updatedData['profilePicture'] = profilePictureBase64;
+    }
+
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .update(updatedData);
+
+    return true;
+  }
+
+  Future<void> signOut() async {
+    await FirebaseAuth.instance.signOut();
+    _userModel = null;
+    notifyListeners();
+    onSignedOut?.call();
   }
 }
