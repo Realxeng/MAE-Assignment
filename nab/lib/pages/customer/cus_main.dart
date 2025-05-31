@@ -4,7 +4,7 @@ import 'package:nab/pages/customer/cus_home_page.dart';
 
 class CustomerMainPage extends StatefulWidget {
   final String uid;
-  const CustomerMainPage({Key? key, required this.uid}) : super(key: key);
+  const CustomerMainPage({super.key, required this.uid});
 
   @override
   State<CustomerMainPage> createState() => _CustomerMainPageState();
@@ -20,8 +20,14 @@ class _CustomerMainPageState extends State<CustomerMainPage> {
     super.initState();
 
     _pages = [
-      CustomerHomePage(uid: widget.uid),
-      CustomerExplorePage(uid: widget.uid),
+      CustomerHomePage(
+        uid: widget.uid,
+        onChangeTab: () => _customerHomeToExplore(),
+      ),
+      CustomerExplorePage(
+        uid: widget.uid,
+        onChangeTab: () => _customerHomeToExplore(),
+      ),
       //CustomerNotificationPage(uid: widget.uid),
       //CustomerProfilePage(uid: widget.uid),
     ];
@@ -33,6 +39,12 @@ class _CustomerMainPageState extends State<CustomerMainPage> {
         _selectedIndex = index;
       });
     }
+  }
+
+  _customerHomeToExplore() {
+    setState(() {
+      _selectedIndex = 1; // switch to Explore tab
+    });
   }
 
   @override

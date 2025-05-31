@@ -5,11 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/listing_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'cus_explore.dart';
 
 class CustomerHomePage extends StatefulWidget {
   final String uid;
-  const CustomerHomePage({super.key, required this.uid});
+  final VoidCallback? onChangeTab;
+  const CustomerHomePage({super.key, required this.uid, this.onChangeTab});
 
   @override
   State<CustomerHomePage> createState() => _CustomerHomePageState();
@@ -18,7 +18,6 @@ class CustomerHomePage extends StatefulWidget {
 class _CustomerHomePageState extends State<CustomerHomePage>
     with AutomaticKeepAliveClientMixin<CustomerHomePage> {
   bool _hasFetchedBookings = false;
-  int _selectedIndex = 0;
 
   @override
   bool get wantKeepAlive => true;
@@ -65,244 +64,323 @@ class _CustomerHomePageState extends State<CustomerHomePage>
     final username = user.username ?? "User";
     final fullName = user.fullName ?? "";
     const borderRadius = BorderRadius.all(Radius.circular(16));
+    final bgColor = Color.fromARGB(255, 200, 200, 200);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: bgColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 80),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header Section: Welcome and SOS button
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
-                child: Container(
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundImage: _getProfileImage(),
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          85,
-                          160,
-                          222,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              username,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color.fromRGBO(21, 21, 21, 1),
+              Container(
+                color: bgColor,
+                padding: const EdgeInsets.only(
+                  bottom: 16,
+                ), // some bottom spacing
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 20, 12, 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          InkWell(
+                            onTap: () => widget.onChangeTab?.call(),
+                            child: Container(
+                              padding: const EdgeInsets.only(
+                                left: 2,
+                                top: 2,
+                                bottom: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 26,
+                                    backgroundImage: _getProfileImage(),
+                                    backgroundColor: const Color.fromARGB(
+                                      255,
+                                      85,
+                                      160,
+                                      222,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Flexible(
+                                    fit: FlexFit.loose,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          username,
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color.fromRGBO(
+                                              21,
+                                              21,
+                                              21,
+                                              1,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          fullName,
+                                          style: TextStyle(
+                                            color: const Color.fromARGB(
+                                              255,
+                                              150,
+                                              150,
+                                              150,
+                                            ),
+                                            fontSize: 15,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 26),
+                                ],
                               ),
                             ),
-                            Text(
-                              fullName,
-                              style: TextStyle(
-                                color: const Color.fromARGB(255, 150, 150, 150),
-                                fontSize: 15,
-                                fontFamily: 'Poppins',
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(30),
+                              onTap: () async {
+                                try {
+                                  await context.read<UserProvider>().signOut();
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "Failed to make SOS call: $e",
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.sos,
+                                      color: Colors.white,
+                                      size: 30,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Search Bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: borderRadius,
+                          boxShadow: [
+                            BoxShadow(color: Colors.black12, blurRadius: 5),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              child: Icon(Icons.search, color: Colors.grey),
+                            ),
+                            Expanded(
+                              child: TextField(
+                                decoration: const InputDecoration(
+                                  hintText: "Search...",
+                                  border: InputBorder.none,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(30),
-                          onTap: () async {
-                            try {
-                              await triggerSOSCall();
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Failed to make SOS call: $e"),
-                                ),
-                              );
-                            }
-                          },
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              children: [
-                                Icon(Icons.sos, color: Colors.white, size: 30),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                    ),
 
-              // Search Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: borderRadius,
-                    boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 5),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Icon(Icons.search, color: Colors.grey),
+                    // Quick Filter Buttons
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
                       ),
-                      Expanded(
-                        child: TextField(
-                          decoration: const InputDecoration(
-                            hintText: "Search...",
-                            border: InputBorder.none,
-                          ),
-                        ),
+                      child: Row(
+                        children: [
+                          Expanded(child: _QuickFilterButton(text: "Near Me!")),
+                          const SizedBox(width: 12),
+                          Expanded(child: _QuickFilterButton(text: "Compact")),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Quick Filter Buttons
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(child: _QuickFilterButton(text: "Near Me!")),
-                    const SizedBox(width: 12),
-                    Expanded(child: _QuickFilterButton(text: "Compact")),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 24, right: 24, bottom: 4),
-                child: Row(
-                  children: [
-                    Expanded(child: _QuickFilterButton(text: "Sedan")),
-                    const SizedBox(width: 12),
-                    Expanded(child: _QuickFilterButton(text: "...")),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 12,
+                        right: 12,
+                        bottom: 4,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(child: _QuickFilterButton(text: "Sedan")),
+                          const SizedBox(width: 12),
+                          Expanded(child: _QuickFilterButton(text: "...")),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
 
               // Recommendation Title
-              const Padding(
-                padding: EdgeInsets.fromLTRB(24, 14, 0, 8),
-                child: Text(
-                  "Recommendation",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-              ),
-              // Recommendations Section
-              Consumer<ListingProvider>(
-                builder: (context, listingProvider, child) {
-                  final listings = listingProvider.listings;
-                  if (listings.isEmpty) {
-                    return const SizedBox(
-                      height: 144,
-                      child: Center(
-                        child: Text("No recommendations available"),
+              Container(
+                padding: const EdgeInsets.only(bottom: 80),
+                color: Colors.grey[850],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(12, 14, 0, 8),
+                      child: Text(
+                        "Recommendation",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
                       ),
-                    );
-                  }
-                  return SizedBox(
-                    height: 144,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.only(left: 24, right: 12),
-                      itemCount: listings.length,
-                      itemBuilder: (context, index) {
-                        final listing = listings[index];
-                        return _CarCard(
-                          title: listing.carModel ?? 'Car Model',
-                          plateNumber: listing.carPlate,
-                          image: MemoryImage(
-                            ImageConstants.constants.decodeBase64(
-                              listing.image ?? '',
+                    ),
+                    // Recommendations Section
+                    Consumer<ListingProvider>(
+                      builder: (context, listingProvider, child) {
+                        final listings = listingProvider.listings;
+                        if (listings.isEmpty) {
+                          return const SizedBox(
+                            height: 144,
+                            child: Center(
+                              child: Text("No recommendations available"),
                             ),
+                          );
+                        }
+                        return SizedBox(
+                          height: 144,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.only(left: 12, right: 12),
+                            itemCount: listings.length,
+                            itemBuilder: (context, index) {
+                              final listing = listings[index];
+                              return _CarCard(
+                                title: listing.carModel ?? 'Car Model',
+                                plateNumber: listing.carPlate,
+                                image: MemoryImage(
+                                  ImageConstants.constants.decodeBase64(
+                                    listing.image ?? '',
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         );
                       },
                     ),
-                  );
-                },
-              ),
 
-              // Past Bookings Title
-              const Padding(
-                padding: EdgeInsets.fromLTRB(24, 20, 0, 8),
-                child: Text(
-                  "Past Bookings",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-              ),
-              // Past Bookings Section
-              Consumer<BookingProvider>(
-                builder: (context, bookingProvider, child) {
-                  final pastBookings = bookingProvider.bookings;
-                  if (pastBookings.isEmpty) {
-                    return SizedBox(
-                      height: 140,
-                      child: Center(child: Text("No past bookings found")),
-                    );
-                  }
-
-                  return SizedBox(
-                    height: 140,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.only(left: 24, right: 12),
-                      separatorBuilder: (_, __) => const SizedBox(width: 12),
-                      itemCount: pastBookings.length,
-                      itemBuilder: (context, index) {
-                        final booking = pastBookings[index];
-                        final car = booking.car;
-
-                        ImageProvider? imageProvider;
-
-                        final base64Image = car?.image;
-                        if (base64Image != null && base64Image.isNotEmpty) {
-                          try {
-                            imageProvider = MemoryImage(
-                              ImageConstants.constants.decodeBase64(
-                                base64Image,
-                              ),
-                            );
-                          } catch (e) {
-                            // If decoding fails, fallback to placeholder
-                            imageProvider = null;
-                          }
+                    // Past Bookings Title
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(12, 20, 0, 8),
+                      child: Text(
+                        "Past Bookings",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    // Past Bookings Section
+                    Consumer<BookingProvider>(
+                      builder: (context, bookingProvider, child) {
+                        final pastBookings = bookingProvider.bookings;
+                        if (pastBookings.isEmpty) {
+                          return SizedBox(
+                            height: 140,
+                            child: Center(
+                              child: Text("No past bookings found"),
+                            ),
+                          );
                         }
-                        return _CarBookingCard(
-                          carModel: car?.carModel ?? 'Unknown Model',
-                          plateNumber: car?.carPlate ?? 'Unknown Plate',
-                          image: imageProvider,
+
+                        return SizedBox(
+                          height: 140,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.only(left: 12, right: 12),
+                            separatorBuilder:
+                                (_, __) => const SizedBox(width: 12),
+                            itemCount: pastBookings.length,
+                            itemBuilder: (context, index) {
+                              final booking = pastBookings[index];
+                              final car = booking.car;
+
+                              ImageProvider? imageProvider;
+
+                              final base64Image = car?.image;
+                              if (base64Image != null &&
+                                  base64Image.isNotEmpty) {
+                                try {
+                                  imageProvider = MemoryImage(
+                                    ImageConstants.constants.decodeBase64(
+                                      base64Image,
+                                    ),
+                                  );
+                                } catch (e) {
+                                  // If decoding fails, fallback to placeholder
+                                  imageProvider = null;
+                                }
+                              }
+                              return _CarBookingCard(
+                                carModel: car?.carModel ?? 'Unknown Model',
+                                plateNumber: car?.carPlate ?? 'Unknown Plate',
+                                image: imageProvider,
+                              );
+                            },
+                          ),
                         );
                       },
                     ),
-                  );
-                },
+                  ],
+                ),
               ),
             ],
           ),
@@ -332,7 +410,7 @@ class _QuickFilterButton extends StatelessWidget {
     return Container(
       height: 52,
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 200, 200, 200),
+        color: const Color.fromARGB(255, 150, 150, 150),
         borderRadius: BorderRadius.circular(13),
       ),
       child: Center(
@@ -391,7 +469,7 @@ class _CarCard extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.bottomLeft,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 2, 18, 9),
+                      padding: const EdgeInsets.fromLTRB(16, 2, 18, 9),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
