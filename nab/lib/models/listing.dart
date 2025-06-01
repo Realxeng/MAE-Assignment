@@ -10,8 +10,6 @@ class ListingModel {
   final int? contactNumber;
   final String? image;
   final String? status;
-  final String? uid;
-  final String? username;
   final String? vehicleCondition;
   UserModel? user;
 
@@ -24,8 +22,6 @@ class ListingModel {
     this.contactNumber,
     this.image,
     this.status,
-    this.uid,
-    this.username,
     this.vehicleCondition,
     this.user,
   });
@@ -77,8 +73,6 @@ class ListingModel {
       'contactNumber': contactNumber,
       'image': image,
       'status': status,
-      'uid': uid,
-      'username': username,
       'vehicleCondition': vehicleCondition,
     };
   }

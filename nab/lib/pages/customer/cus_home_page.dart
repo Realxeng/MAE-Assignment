@@ -44,7 +44,7 @@ class _CustomerHomePageState extends State<CustomerHomePage>
     if (user != null && !_hasFetchedBookings) {
       context.read<BookingProvider>().fetchPastBookings(user);
       context.read<ListingProvider>().fetchAvailableListings();
-      _hasFetchedBookings = true;
+      //_hasFetchedBookings = true;
     }
   }
 
