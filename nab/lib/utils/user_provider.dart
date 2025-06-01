@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:nab/pages/admin/admin_main.dart';
 import 'package:nab/pages/customer/cus_main.dart';
-import 'package:nab/pages/vendor/vendor_home_page.dart';
+import 'package:nab/pages/vendor/vendor_summary.dart';
 import 'package:nab/models/user.dart';
 import 'package:nab/utils/image_provider.dart';
 
@@ -146,9 +146,9 @@ class UserProvider extends ChangeNotifier {
     }
 
     await FirebaseFirestore.instance
-    .collection('users')
-    .doc(userId)
-    .set(updatedData, SetOptions(merge: true));
+        .collection('users')
+        .doc(userId)
+        .set(updatedData, SetOptions(merge: true));
 
     return true;
   }

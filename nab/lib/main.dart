@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nab/pages/common/user_login.dart';
 import 'package:nab/pages/admin/admin_home_page.dart';
-import 'package:nab/pages/vendor/vendor_home_page.dart';
+import 'package:nab/pages/vendor/vendor_summary.dart';
 import 'package:nab/pages/common/landing_page.dart';
 import 'firebase_options.dart';
 import 'utils/auth_router.dart';
