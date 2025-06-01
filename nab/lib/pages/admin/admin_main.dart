@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nab/pages/admin/admin_edit_profile.dart';
+import 'package:nab/pages/common/user_edit_profile.dart';
 import 'package:nab/pages/admin/admin_home_page.dart';
 import 'package:nab/pages/admin/admin_manage_listings.dart';
 import 'package:nab/pages/admin/admin_view_bookings.dart';
@@ -25,7 +25,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
       AdminHomePage(uid: widget.uid),
       ManageListingsPage(),
       ViewBookingsPage(),
-      EditAdminProfilePage(uid: widget.uid),
+      EditProfilePage(uid: widget.uid),
     ];
   }
 
@@ -40,10 +40,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
@@ -51,7 +48,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.grey[900],
-        showUnselectedLabels: true, 
+        showUnselectedLabels: true,
         items: [
           BottomNavigationBarItem(
             icon: Padding(
