@@ -1,97 +1,148 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-class RentalListing extends StatelessWidget {
-  const RentalListing({Key? key}) : super(key: key);
+class RentalListingPage extends StatelessWidget {
+  final String vendorUid;
+
+  const RentalListingPage({Key? key, required this.vendorUid})
+    : super(key: key);
+
+  Future<List<Map<String, dynamic>>> fetchVendorListings() async {
+    final snapshot =
+        await FirebaseFirestore.instance
+            .collection('listings')
+            .where('vendorId', isEqualTo: vendorUid)
+            .get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id; // add doc id for reference if needed
+      return data;
+    }).toList();
+  }
+
+  Color _statusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'available':
+        return Colors.green;
+      case 'unavailable':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    final listingStream =
-        FirebaseFirestore.instance
-            .collection('listing')
-            .where('uid', isEqualTo: uid)
-            .snapshots();
-
+    const backgroundColor = Colors.grey;
     return Scaffold(
-      backgroundColor: Colors.grey[850],
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blueAccent,
-        child: const Icon(Icons.add),
-        onPressed: () {
-          // TODO: Navigate to add new listing page
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Add Listing Page Coming Soon!")),
-          );
-        },
+      appBar: AppBar(
+        title: const Text("Your Listings"),
+        backgroundColor: Colors.blueGrey,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: listingStream,
+      backgroundColor: backgroundColor[900],
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: fetchVendorListings(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          final docs = snapshot.data?.docs ?? [];
-          if (docs.isEmpty) {
-            return const Center(
+          if (snapshot.hasError) {
+            return Center(
               child: Text(
-                "No listings found.",
-                style: TextStyle(color: Colors.white70),
+                'Error: ${snapshot.error}',
+                style: const TextStyle(color: Colors.white),
               ),
             );
           }
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, i) {
-              final data = docs[i].data() as Map<String, dynamic>? ?? {};
-              return Card(
-                color: Colors.grey[900],
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          final listings = snapshot.data ?? [];
+
+          if (listings.isEmpty) {
+            return const Center(
+              child: Text(
+                "No listings found",
+                style: TextStyle(color: Colors.white70, fontSize: 18),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(12),
+            itemCount: listings.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final listing = listings[index];
+              final title = listing['title'] ?? 'Untitled';
+              final status = listing['status'] ?? 'Unknown';
+              final imageBase64 = listing['image'];
+              ImageProvider? imageProvider;
+              try {
+                if (imageBase64 != null &&
+                    imageBase64 is String &&
+                    imageBase64.isNotEmpty) {
+                  imageProvider = MemoryImage(
+                    // Assuming image is base64 encoded string, decode it here
+                    // Import dart:convert at top: import 'dart:convert';
+                    // And decode as:
+                    base64Decode(imageBase64),
+                  );
+                }
+              } catch (_) {
+                imageProvider = null;
+              }
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[850],
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: ListTile(
-                  leading:
-                      data['image'] != null
-                          ? CircleAvatar(
-                            backgroundImage: NetworkImage(data['image']),
-                            radius: 28,
-                          )
-                          : const CircleAvatar(
-                            child: Icon(
-                              Icons.directions_car,
-                              color: Colors.blueAccent,
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child:
+                        imageProvider != null
+                            ? Image(
+                              image: imageProvider,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            )
+                            : const Icon(
+                              Icons.home_work,
+                              size: 60,
+                              color: Colors.white70,
                             ),
-                            radius: 28,
-                            backgroundColor: Colors.white12,
-                          ),
+                  ),
                   title: Text(
-                    data['carModel'] ?? 'Unknown Model',
+                    title,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  subtitle: Text(
-                    "Plate: ${data['carPlate'] ?? '-'}\nStatus: ${data['status'] ?? '-'}",
-                    style: const TextStyle(color: Colors.white70),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _statusColor(status),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      status.toString().toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  isThreeLine: true,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                    onPressed: () {
-                      // TODO: Edit listing page
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Edit Listing Coming Soon!"),
-                        ),
-                      );
-                    },
-                  ),
+                  onTap: () {
+                    // Optionally implement detail or edit page navigation here
+                  },
                 ),
               );
             },
