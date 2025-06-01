@@ -214,9 +214,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     return Scaffold(
+      backgroundColor: Colors.grey[900], // a bit darker than before
       appBar: AppBar(
         title: const Text('Edit Profile'),
-        backgroundColor: Color.fromARGB(255, 140, 200, 255),
+        backgroundColor: const Color.fromARGB(
+          255,
+          140,
+          200,
+          255,
+        ), // your accent blue
         centerTitle: true,
       ),
       body:
@@ -226,133 +232,162 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 children: [
                   SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Stack(
-                            alignment: Alignment.bottomRight,
-                            children: [
-                              profileImageWidget,
-                              Positioned(
-                                right: 4,
-                                bottom: 4,
-                                child: InkWell(
-                                  onTap: _pickImage,
-                                  borderRadius: BorderRadius.circular(30),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                    child: const Icon(
-                                      Icons.edit,
-                                      color: Colors.white,
-                                      size: 20,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            Colors
+                                .grey[850], // slightly lighter than scaffold bg
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                profileImageWidget,
+                                Positioned(
+                                  right: 4,
+                                  bottom: 4,
+                                  child: InkWell(
+                                    onTap: _pickImage,
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.blueAccent.withOpacity(
+                                          0.8,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.edit,
+                                        color: Colors.white70,
+                                        size: 20,
+                                      ),
                                     ),
                                   ),
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Full Name: ${_fullName ?? ''}',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(color: Colors.white70),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Full Name: ${_fullName ?? ''}',
-                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                          ),
-                          const SizedBox(height: 8),
+                            const SizedBox(height: 8),
 
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Date of Birth: $dobFormatted',
-                              style: Theme.of(context).textTheme.titleMedium,
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Date of Birth: $dobFormatted',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(color: Colors.white70),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
-                          TextFormField(
-                            controller: _usernameController,
-                            decoration: _inputDecoration('Username'),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Username cannot be empty';
-                              }
-                              if (value.trim().length < 3) {
-                                return 'Username must be at least 3 characters';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-
-                          TextFormField(
-                            controller: _emailController,
-                            decoration: _inputDecoration('Email'),
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Email cannot be empty';
-                              }
-                              final emailRegEx = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                              if (!emailRegEx.hasMatch(value.trim())) {
-                                return 'Enter a valid email';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-
-                          TextFormField(
-                            controller: _townshipController,
-                            decoration: _inputDecoration('Township'),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Township cannot be empty';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 32),
-
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _isSaving ? null : _submit,
-                              child: const Text('Save Changes'),
+                            TextFormField(
+                              controller: _usernameController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: _inputDecoration('Username'),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Username cannot be empty';
+                                }
+                                if (value.trim().length < 3) {
+                                  return 'Username must be at least 3 characters';
+                                }
+                                return null;
+                              },
                             ),
-                          ),
-                          const SizedBox(height: 24),
+                            const SizedBox(height: 12),
 
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: _isSaving ? null : _logout,
-                              icon: const Icon(Icons.logout),
-                              label: const Text('Logout'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor:
-                                    Theme.of(context).colorScheme.error,
-                                side: BorderSide(
-                                  color: Theme.of(context).colorScheme.error,
+                            TextFormField(
+                              controller: _emailController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: _inputDecoration('Email'),
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Email cannot be empty';
+                                }
+                                final emailRegEx = RegExp(
+                                  r'^[^@]+@[^@]+\.[^@]+',
+                                );
+                                if (!emailRegEx.hasMatch(value.trim())) {
+                                  return 'Enter a valid email';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 12),
+
+                            TextFormField(
+                              controller: _townshipController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: _inputDecoration('Township'),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Township cannot be empty';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 32),
+
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isSaving ? null : _submit,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color.fromARGB(
+                                    255,
+                                    140,
+                                    200,
+                                    255,
+                                  ),
+                                ),
+                                child: const Text('Save Changes'),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _isSaving ? null : _logout,
+                                icon: const Icon(
+                                  Icons.logout,
+                                  color: Colors.redAccent,
+                                ),
+                                label: const Text(
+                                  'Logout',
+                                  style: TextStyle(color: Colors.redAccent),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Colors.redAccent,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+                            const SizedBox(height: 16),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   if (_isSaving)
                     Container(
-                      color: const Color.fromRGBO(0, 0, 0, 0.4),
+                      color: Colors.black.withOpacity(0.5),
                       child: const Center(child: CircularProgressIndicator()),
                     ),
                 ],
@@ -374,7 +409,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
       labelText: label,
-      border: const OutlineInputBorder(),
+      labelStyle: const TextStyle(color: Colors.white70),
+      filled: true,
+      fillColor: Colors.grey[800],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Colors.white30),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Colors.white30),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.lightBlue.shade300, width: 2),
+      ),
     );
   }
 }
