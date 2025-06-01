@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -30,6 +31,12 @@ class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveCl
       );
       Navigator.pushReplacementNamed(context, '/login');
     };
+  }
+  
+  ImageProvider _getProfileImage() {
+    final userProvider = context.watch<UserProvider>();
+    final profileImage = userProvider.user?.profileImage ?? "User";
+    return MemoryImage(ImageConstants.constants.decodeBase64(profileImage));
   }
 
   @override
@@ -82,19 +89,17 @@ class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveCl
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Ensure the mixin's build method is called
+    super.build(context);
     final userProvider = context.watch<UserProvider>();
     userName = userProvider.user?.username ?? "User";
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(
-            Icons.account_circle,
-            size: 48,
-          ), 
+          icon: CircleAvatar(
+            radius: 24,
+            backgroundImage: _getProfileImage(),
+          ),
           onPressed: () {
-            UserProvider userProvider = context.read<UserProvider>();
-            userProvider.signOut();
           },
         ),
         title: Text('Welcome $userName'),
