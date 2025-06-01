@@ -121,6 +121,8 @@ class UserProvider extends ChangeNotifier {
 
     String userId = currentUser.uid;
 
+    await fetchUserData(userId);
+
     String? profilePictureBase64;
 
     if (profilePictureFile != null) {
@@ -136,12 +138,12 @@ class UserProvider extends ChangeNotifier {
     };
 
     if (profilePictureBase64 != null && profilePictureBase64.isNotEmpty) {
-      updatedData['profilePicture'] = profilePictureBase64;
+      updatedData['picture'] = profilePictureBase64;
     }
 
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
+        .doc(user?.id)
         .set(updatedData, SetOptions(merge: true));
 
     return true;
