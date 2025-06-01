@@ -1,3 +1,5 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
 import 'package:flutter/material.dart';
 import 'package:nab/models/booking.dart';
 import 'package:nab/pages/customer/cus_booking.dart';
@@ -20,6 +22,7 @@ class CustomerHomePage extends StatefulWidget {
 class _CustomerHomePageState extends State<CustomerHomePage>
     with AutomaticKeepAliveClientMixin<CustomerHomePage> {
   bool _hasFetchedBookings = false;
+  bool _hasFetchedListings = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -47,7 +50,11 @@ class _CustomerHomePageState extends State<CustomerHomePage>
       context.read<BookingProvider>().fetchPastBookings(user);
       _hasFetchedBookings = true;
     }
-    context.read<ListingProvider>().fetchAvailableListings();
+
+    if (!_hasFetchedListings) {
+      context.read<ListingProvider>().fetchAvailableListings();
+      _hasFetchedListings = true;
+    }
   }
 
   ImageProvider _getProfileImage() {
@@ -57,7 +64,9 @@ class _CustomerHomePageState extends State<CustomerHomePage>
   }
 
   void _searchCarByType(String type) {
-    context.read<ListingProvider>().fetchListingsByType(type);
+    if (type.isNotEmpty) {
+      context.read<ListingProvider>().fetchListingsByType(type);
+    }
     widget.onTabChange?.call(1);
   }
 
@@ -188,7 +197,7 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                               borderRadius: BorderRadius.circular(30),
                               onTap: () async {
                                 try {
-                                  await context.read<UserProvider>().signOut();
+                                  await triggerSOSCall();
                                 } catch (e) {
                                   if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -267,9 +276,23 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                       ),
                       child: Row(
                         children: [
-                          Expanded(child: _QuickFilterButton(text: "Near Me!")),
+                          Expanded(
+                            child: _QuickFilterButton(
+                              text: "Near Me!",
+                              onTap: () {
+                                _searchCarByType("Near Me!");
+                              },
+                            ),
+                          ),
                           const SizedBox(width: 12),
-                          Expanded(child: _QuickFilterButton(text: "Compact")),
+                          Expanded(
+                            child: _QuickFilterButton(
+                              text: "Compact",
+                              onTap: () {
+                                _searchCarByType("Compact");
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -281,9 +304,23 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                       ),
                       child: Row(
                         children: [
-                          Expanded(child: _QuickFilterButton(text: "Sedan")),
+                          Expanded(
+                            child: _QuickFilterButton(
+                              text: "Sedan",
+                              onTap: () {
+                                _searchCarByType("Sedan");
+                              },
+                            ),
+                          ),
                           const SizedBox(width: 12),
-                          Expanded(child: _QuickFilterButton(text: "...")),
+                          Expanded(
+                            child: _QuickFilterButton(
+                              text: "...",
+                              onTap: () {
+                                _searchCarByType("");
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -440,12 +477,13 @@ class _CustomerHomePageState extends State<CustomerHomePage>
 // --- Helper Widgets (same as before, keep them as StatelessWidget) ---
 class _QuickFilterButton extends StatelessWidget {
   final String text;
-  const _QuickFilterButton({required this.text});
+  final VoidCallback? onTap;
+  const _QuickFilterButton({required this.text, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Container(
         height: 52,
         decoration: BoxDecoration(
