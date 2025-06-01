@@ -45,15 +45,13 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
   }
 
   void _searchCarByType(String type) {
-    final searchType = type.trim();
-    if (searchType.isEmpty) return; // Avoid empty searches
-
-    setState(() {
-      selectedCategory = searchType; // Sync with category UI
-      _searchController.text = searchType;
-    });
-
-    context.read<ListingProvider>().fetchAcceptedListingsByType(type);
+    if (type.isEmpty) {
+      // Reset to show all
+      context.read<ListingProvider>().fetchAvailableListings();
+    } else {
+      context.read<ListingProvider>().fetchListingsByType(type);
+    }
+    widget.onTabChange?.call(1);
   }
 
   @override
@@ -201,6 +199,9 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
                 child: Consumer<ListingProvider>(
                   builder: (context, listingProvider, _) {
                     final listings = listingProvider.listings;
+                    print(
+                      'Rebuilding listings widget, count: ${listingProvider.listings.length}',
+                    );
                     if (listings.isEmpty) {
                       return const Center(child: Text("No cars to display"));
                     }

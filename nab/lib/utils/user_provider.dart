@@ -153,6 +153,40 @@ class UserProvider extends ChangeNotifier {
     return true;
   }
 
+  Future<void> deleteUserAccount() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      throw Exception('No user is currently logged in.');
+    }
+
+    String userId = currentUser.uid;
+
+    await fetchUserData(userId);
+
+    try {
+      // Delete Firebase Authentication user
+      await currentUser.delete();
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.id)
+          .delete();
+
+      // Clear local user model and notify listeners
+      _userModel = null;
+      notifyListeners();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        throw Exception('Please re-authenticate to delete your account.');
+      } else {
+        throw Exception('Failed to delete user: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Failed to delete user: $e');
+    }
+  }
+
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
     _userModel = null;

@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nab/utils/auth_wrapper.dart';
 import 'package:flutter/material.dart';
+import 'package:nab/utils/user_provider.dart';
 
 class RegisterPage extends StatefulWidget {
   final String role;
@@ -185,9 +187,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _onNextPressed() {
     AuthWrapper authWrapper = AuthWrapper();
+    UserProvider userProvider = UserProvider();
     _controllers[2].text = _dobString ?? '';
     try {
       authWrapper.signUp(_controllers, widget.role);
+      userProvider.redirectUser(context);
     } catch (e) {
       ScaffoldMessenger.of(
         context,

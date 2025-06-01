@@ -41,7 +41,10 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
   LatLng? _center;
 
   void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
+    print("Google Map created");
+    setState(() {
+      mapController = controller;
+    });
   }
 
   Future<void> _loadBookingDetails() async {
@@ -182,7 +185,7 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
                   children: [
                     // Placeholder map container (replace with actual map widget if you want)
                     Container(
-                      height: 200,
+                      height: 400,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         color: Colors.grey[700],
@@ -193,14 +196,19 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
                                 ? const Center(
                                   child: CircularProgressIndicator(),
                                 )
-                                : GoogleMap(
-                                  onMapCreated: _onMapCreated,
-                                  initialCameraPosition: CameraPosition(
-                                    target: _center!,
-                                    zoom: 14.0,
+                                : ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    16,
+                                  ), // mask rounded corners
+                                  child: GoogleMap(
+                                    onMapCreated: _onMapCreated,
+                                    initialCameraPosition: CameraPosition(
+                                      target: _center!,
+                                      zoom: 14.0,
+                                    ),
+                                    myLocationEnabled: true,
+                                    myLocationButtonEnabled: true,
                                   ),
-                                  myLocationEnabled: true,
-                                  myLocationButtonEnabled: true,
                                 ),
                       ),
                     ),

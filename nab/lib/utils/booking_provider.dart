@@ -115,7 +115,6 @@ class BookingProvider extends ChangeNotifier {
 
     _bookingSubscription = FirebaseFirestore.instance
         .collection('bookings')
-        .where('status', isNotEqualTo: 'finished')
         .where('customer', isEqualTo: userDocRef)
         .snapshots()
         .listen(

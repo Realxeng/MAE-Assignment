@@ -30,21 +30,16 @@ class _CustomerBookingListPageState extends State<CustomerBookingListPage>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    if (!_hasFetchedActiveBookings) {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final user = userProvider.user;
-      if (user != null) {
-        context.read<BookingProvider>().fetchActiveBookings(user);
-        _hasFetchedActiveBookings = true;
-      }
+    final userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.user;
+
+    if (user != null && !_hasFetchedActiveBookings) {
+      context.read<BookingProvider>().fetchActiveBookings(user);
+      _hasFetchedActiveBookings = true;
     }
   }
 
-  void _openBooking(String plate) {
-    // Add your navigation or any action for booking tap here
-    // For example:
-    // Navigator.push(...);
-  }
+  void _openBooking(String plate) {}
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +67,7 @@ class _CustomerBookingListPageState extends State<CustomerBookingListPage>
         child: Consumer<BookingProvider>(
           builder: (context, bookingProvider, _) {
             final bookings = bookingProvider.bookings;
+            print('Bookings length: ${bookings.length}');
             if (bookings.isEmpty) {
               return const Center(
                 child: Text(
