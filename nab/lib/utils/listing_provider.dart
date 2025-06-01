@@ -195,6 +195,7 @@ class ListingProvider extends ChangeNotifier {
             } else {
               _singleListing = null;
             }
+            print("Listing loaded: $_singleListing");
             notifyListeners();
 
             if (!completer.isCompleted) {

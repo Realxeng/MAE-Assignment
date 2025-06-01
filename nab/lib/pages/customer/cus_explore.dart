@@ -198,7 +198,7 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
                 ),
                 child: Consumer<ListingProvider>(
                   builder: (context, listingProvider, _) {
-                    final listings = listingProvider.listings;
+                    final listings = listingProvider.listingFiltered;
                     print(
                       'Rebuilding listings widget, count: ${listingProvider.listings.length}',
                     );

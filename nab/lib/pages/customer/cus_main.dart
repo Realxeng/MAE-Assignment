@@ -40,7 +40,6 @@ class _CustomerMainPageState extends State<CustomerMainPage> {
   }
 
   void _onTabChange(int index) {
-    context.read<ListingProvider>().fetchAvailableListings();
     if (_selectedIndex != index) {
       setState(() {
         _selectedIndex = index;

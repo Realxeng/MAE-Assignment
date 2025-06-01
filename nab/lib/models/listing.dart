@@ -47,7 +47,14 @@ class ListingModel {
 
     if (userRef != null) {
       final userSnap = await userRef.get();
-      user = UserModel.fromDocument(userSnap);
+      if (!userSnap.exists || userSnap.data() == null) {
+        user = null;
+        throw StateError(
+          'User document data is null for userId: ${userRef.id}',
+        );
+      } else {
+        user = UserModel.fromDocument(userSnap);
+      }
     }
 
     return ListingModel(
