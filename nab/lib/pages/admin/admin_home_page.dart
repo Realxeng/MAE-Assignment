@@ -7,7 +7,8 @@ import 'package:provider/provider.dart';
 
 class AdminHomePage extends StatefulWidget {
   final String uid;
-  const AdminHomePage({super.key, required this.uid});
+  final void Function(int)? onTabChange;
+  const AdminHomePage({super.key, required this.uid, this.onTabChange});
 
   @override
   State<AdminHomePage> createState() => _AdminHomePageState();
@@ -100,6 +101,7 @@ class _AdminHomePageState extends State<AdminHomePage> with AutomaticKeepAliveCl
             backgroundImage: _getProfileImage(),
           ),
           onPressed: () {
+            widget.onTabChange?.call(3); // Navigate to Edit Profile
           },
         ),
         title: Text('Welcome $userName'),

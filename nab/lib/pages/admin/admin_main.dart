@@ -22,7 +22,7 @@ class _AdminMainPageState extends State<AdminMainPage> {
     super.initState();
 
     _pages = [
-      AdminHomePage(uid: widget.uid),
+      AdminHomePage(uid: widget.uid, onTabChange: _onTabChange),
       ManageListingsPage(),
       ViewBookingsPage(),
       EditProfilePage(uid: widget.uid),
@@ -30,6 +30,14 @@ class _AdminMainPageState extends State<AdminMainPage> {
   }
 
   void _onItemTapped(int index) {
+    if (_selectedIndex != index) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
+    void _onTabChange(int index) {
     if (_selectedIndex != index) {
       setState(() {
         _selectedIndex = index;
