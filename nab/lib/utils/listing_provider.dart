@@ -177,4 +177,26 @@ class ListingProvider extends ChangeNotifier {
           },
         );
   }
+
+  Future<void> fetchListingsByPlate(String plate) async {
+    await _listingSubscription?.cancel();
+
+    _listingSubscription = FirebaseFirestore.instance
+        .collection('listing')
+        .where('carPlate', isEqualTo: plate.toUpperCase())
+        .snapshots()
+        .listen(
+          (querySnapshot) {
+            _listingModel =
+                querySnapshot.docs
+                    .map((doc) => ListingModel.fromDocument(doc))
+                    .toList();
+            notifyListeners();
+          },
+          onError: (error) {
+            _listingModel = [];
+            notifyListeners();
+          },
+        );
+  }
 }
