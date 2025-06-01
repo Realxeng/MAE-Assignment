@@ -117,13 +117,14 @@ class BookingProvider extends ChangeNotifier {
     final vendorRef = firestore.collection("users").doc(vendor.id);
     final cusRef = firestore.collection("users").doc(customer.id);
     return {
-      'createdAt': Timestamp.now(),
-      'dateEnded': "",
-      'dateStarted': "",
-      'status': "pending",
-      'notes': notes,
       'car': carRef,
+      'createdAt': Timestamp.now(),
       'customer': cusRef,
+      'dateEnded': null,
+      'dateStarted': null,
+      'notes': notes,
+      'price': 0,
+      'status': "pending",
       'vendor': vendorRef,
     };
   }

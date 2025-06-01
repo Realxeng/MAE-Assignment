@@ -46,12 +46,11 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
   bool get wantKeepAlive => true;
 
   Future<void> _loadBookingDetails() async {
-    final listing = context.read<ListingProvider>().singleListing;
     try {
       await context.read<ListingProvider>().fetchListingsByPlate(
         widget.plate ?? "",
       );
-
+      final listing = context.read<ListingProvider>().singleListing;
       if (listing != null) {
         this.listing = listing;
         final vendor = listing.user;
@@ -88,10 +87,10 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
     }
   }
 
-  void _confirmBooking(String notes) {
-    final bookingProvider = context.watch<BookingProvider>();
-    final userProvider = context.watch<UserProvider>();
-    userProvider.fetchUserData(widget.uid);
+  void _confirmBooking(String notes) async {
+    final bookingProvider = context.read<BookingProvider>();
+    final userProvider = context.read<UserProvider>();
+    await userProvider.fetchUserData(widget.uid);
     final user = userProvider.user;
     bookingProvider.addBooking(listing, listing.user!, user!, notes);
     ScaffoldMessenger.of(
@@ -110,6 +109,7 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
         (vendorPicture != "" && vendorPicture.isNotEmpty)
             ? MemoryImage(ImageConstants.constants.decodeBase64(vendorPicture))
             : null;
+    final TextEditingController _notesController = TextEditingController();
     return Scaffold(
       appBar: AppBar(
         title: const Text("Car Booking"),
@@ -293,6 +293,23 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _notesController,
+                      maxLines: 3,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Add booking notes',
+                        hintStyle: TextStyle(color: Colors.white54),
+                        filled: true,
+                        fillColor: Colors.grey[800],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 32),
 
                     // Confirm Booking Button
