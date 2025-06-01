@@ -108,7 +108,7 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<bool> updateUserProfile({
-    required String email,
+    required String fullName,
     required String username,
     required String township,
     File? profilePictureFile, // optional image file
@@ -121,12 +121,6 @@ class UserProvider extends ChangeNotifier {
 
     String userId = currentUser.uid;
 
-    // Update email in Firebase Auth if changed
-    if (email != currentUser.email) {
-      await currentUser.updateEmail(email);
-      await currentUser.reload();
-    }
-
     String? profilePictureBase64;
 
     if (profilePictureFile != null) {
@@ -136,7 +130,7 @@ class UserProvider extends ChangeNotifier {
     }
 
     Map<String, dynamic> updatedData = {
-      'email': email,
+      'fullName': fullName,
       'username': username,
       'township': township,
     };
