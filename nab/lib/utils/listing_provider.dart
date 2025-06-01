@@ -7,6 +7,8 @@ class ListingProvider extends ChangeNotifier {
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _listingSubscription;
   List<ListingModel> _listingModel = [];
   List<ListingModel> get listings => _listingModel;
+  ListingModel? _singleListing;
+  ListingModel? get singleListing => _singleListing;
   ListingProvider() {
     fetchAllListings();
   }
@@ -181,22 +183,37 @@ class ListingProvider extends ChangeNotifier {
   Future<void> fetchListingsByPlate(String plate) async {
     await _listingSubscription?.cancel();
 
+    final completer = Completer<void>();
+
     _listingSubscription = FirebaseFirestore.instance
         .collection('listing')
         .where('carPlate', isEqualTo: plate.toUpperCase())
         .snapshots()
         .listen(
-          (querySnapshot) {
-            _listingModel =
-                querySnapshot.docs
-                    .map((doc) => ListingModel.fromDocument(doc))
-                    .toList();
+          (querySnapshot) async {
+            if (querySnapshot.docs.isNotEmpty) {
+              _singleListing = await ListingModel.fromDocumentAsync(
+                querySnapshot.docs.first,
+              );
+            } else {
+              _singleListing = null;
+            }
             notifyListeners();
+
+            if (!completer.isCompleted) {
+              completer.complete(); // Complete on first data
+            }
           },
           onError: (error) {
-            _listingModel = [];
+            _singleListing = null;
             notifyListeners();
+
+            if (!completer.isCompleted) {
+              completer.completeError(error);
+            }
           },
         );
+
+    return completer.future;
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nab/models/booking.dart';
+import 'package:nab/models/listing.dart';
 import 'package:nab/models/user.dart';
 
 class BookingProvider extends ChangeNotifier {
@@ -41,11 +42,15 @@ class BookingProvider extends ChangeNotifier {
         );
   }
 
-  Future<void> addBooking(BookingModel booking) async {
+  Future<void> addBooking(
+    ListingModel listing,
+    UserModel vendor,
+    UserModel customer,
+    String notes,
+  ) async {
+    final bookingData = fromListingandUser(listing, vendor, customer, notes);
     try {
-      await FirebaseFirestore.instance
-          .collection('bookings')
-          .add(booking.toJson());
+      await FirebaseFirestore.instance.collection('bookings').add(bookingData);
     } catch (e) {
       print("Error adding booking: $e");
     }
@@ -77,6 +82,7 @@ class BookingProvider extends ChangeNotifier {
           },
         );
   }
+
   Future<void> fetchBookingFromStatus(String status) async {
     await _bookingSubscription?.cancel();
 
@@ -98,5 +104,27 @@ class BookingProvider extends ChangeNotifier {
             notifyListeners();
           },
         );
+  }
+
+  Map<String, dynamic> fromListingandUser(
+    ListingModel listing,
+    UserModel vendor,
+    UserModel customer,
+    String notes,
+  ) {
+    final firestore = FirebaseFirestore.instance;
+    final carRef = firestore.collection("listing").doc(listing.id);
+    final vendorRef = firestore.collection("users").doc(vendor.id);
+    final cusRef = firestore.collection("users").doc(customer.id);
+    return {
+      'createdAt': Timestamp.now(),
+      'dateEnded': "",
+      'dateStarted': "",
+      'status': "pending",
+      'notes': notes,
+      'car': carRef,
+      'customer': cusRef,
+      'vendor': vendorRef,
+    };
   }
 }
