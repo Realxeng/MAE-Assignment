@@ -7,6 +7,7 @@ class ListingProvider extends ChangeNotifier {
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _listingSubscription;
   List<ListingModel> _listingModel = [];
   List<ListingModel> get listings => _listingModel;
+  List<ListingModel> listingFiltered = [];
   ListingModel? _singleListing;
   ListingModel? get singleListing => _singleListing;
   ListingProvider() {
@@ -53,6 +54,7 @@ class ListingProvider extends ChangeNotifier {
                 querySnapshot.docs
                     .map((doc) => ListingModel.fromDocument(doc))
                     .toList();
+            print('Listings count after fetch: ${listings.length}');
             notifyListeners();
           },
           onError: (error) {
@@ -159,25 +161,20 @@ class ListingProvider extends ChangeNotifier {
   }
 
   Future<void> fetchListingsByType(String type) async {
-    await _listingSubscription?.cancel();
+    // If type is empty, show all:
+    if (type.isEmpty) {
+      listingFiltered = List.from(_listingModel);
+      notifyListeners();
+      return;
+    }
+    // else filter the list or fetch filtered from server
+    listingFiltered = _listingModel.where((l) => l.carType == type).toList();
+    notifyListeners();
+  }
 
-    _listingSubscription = FirebaseFirestore.instance
-        .collection('listing')
-        .where('carType', isEqualTo: type.toLowerCase())
-        .snapshots()
-        .listen(
-          (querySnapshot) {
-            _listingModel =
-                querySnapshot.docs
-                    .map((doc) => ListingModel.fromDocument(doc))
-                    .toList();
-            notifyListeners();
-          },
-          onError: (error) {
-            _listingModel = [];
-            notifyListeners();
-          },
-        );
+  void clearFilter() {
+    listingFiltered = List.from(_listingModel);
+    notifyListeners();
   }
 
   Future<void> fetchListingsByPlate(String plate) async {
