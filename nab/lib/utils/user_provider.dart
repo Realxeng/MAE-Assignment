@@ -108,7 +108,7 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<bool> updateUserProfile({
-    required String email,
+    required String fullName,
     required String username,
     required String township,
     File? profilePictureFile, // optional image file
@@ -121,11 +121,7 @@ class UserProvider extends ChangeNotifier {
 
     String userId = currentUser.uid;
 
-    // Update email in Firebase Auth if changed
-    if (email != currentUser.email) {
-      await currentUser.updateEmail(email);
-      await currentUser.reload();
-    }
+    await fetchUserData(userId);
 
     String? profilePictureBase64;
 
@@ -136,18 +132,18 @@ class UserProvider extends ChangeNotifier {
     }
 
     Map<String, dynamic> updatedData = {
-      'email': email,
+      'fullName': fullName,
       'username': username,
       'township': township,
     };
 
     if (profilePictureBase64 != null && profilePictureBase64.isNotEmpty) {
-      updatedData['profilePicture'] = profilePictureBase64;
+      updatedData['picture'] = profilePictureBase64;
     }
 
     await FirebaseFirestore.instance
         .collection('users')
-        .doc(userId)
+        .doc(user?.id)
         .set(updatedData, SetOptions(merge: true));
 
     return true;

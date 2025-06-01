@@ -140,6 +140,8 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
       desiredAccuracy: LocationAccuracy.high,
     );
 
+    if (!mounted) return;
+
     setState(() {
       _center = LatLng(position.latitude, position.longitude);
     });

@@ -19,12 +19,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final ImagePicker _picker = ImagePicker();
 
   final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _townshipController = TextEditingController();
 
   File? _pickedImageFile;
   String? _profileImageBase64;
-  String? _fullName;
+  String? _email;
   DateTime? _dob;
 
   bool _isLoading = true; // start as loading
@@ -56,10 +56,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _isLoading = false;
           // update controllers and fields here...
           _usernameController.text = user.username ?? '';
-          _emailController.text = user.email ?? '';
+          _fullNameController.text = user.fullName ?? '';
           _townshipController.text = user.township ?? '';
           _profileImageBase64 = user.profileImage;
-          _fullName = user.fullName ?? '';
+          _email = user.email ?? '';
           _dob = user.dob != null ? DateTime.tryParse(user.dob!) : null;
         });
       }
@@ -102,7 +102,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
 
       await userProvider.updateUserProfile(
-        email: _emailController.text.trim(),
+        fullName: _fullNameController.text.trim(),
         username: _usernameController.text.trim(),
         township: _townshipController.text.trim(),
         profilePictureFile: _pickedImageFile,
@@ -162,7 +162,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void dispose() {
     _usernameController.dispose();
-    _emailController.dispose();
+    _fullNameController.dispose();
     _townshipController.dispose();
     super.dispose();
   }
@@ -277,7 +277,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Full Name: ${_fullName ?? ''}',
+                                'Full Name: ${_email ?? ''}',
                                 style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(color: Colors.white70),
                               ),
@@ -311,19 +311,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             const SizedBox(height: 12),
 
                             TextFormField(
-                              controller: _emailController,
+                              controller: _fullNameController,
                               style: const TextStyle(color: Colors.white),
-                              decoration: _inputDecoration('Email'),
-                              keyboardType: TextInputType.emailAddress,
+                              decoration: _inputDecoration('Full Name'),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
                                   return 'Email cannot be empty';
-                                }
-                                final emailRegEx = RegExp(
-                                  r'^[^@]+@[^@]+\.[^@]+',
-                                );
-                                if (!emailRegEx.hasMatch(value.trim())) {
-                                  return 'Enter a valid email';
                                 }
                                 return null;
                               },

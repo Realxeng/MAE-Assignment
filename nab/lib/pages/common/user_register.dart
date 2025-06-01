@@ -185,12 +185,12 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void _onNextPressed() {
+  void _onNextPressed() async {
     AuthWrapper authWrapper = AuthWrapper();
     UserProvider userProvider = UserProvider();
     _controllers[2].text = _dobString ?? '';
     try {
-      authWrapper.signUp(_controllers, widget.role);
+      await authWrapper.signUp(_controllers, widget.role);
       userProvider.redirectUser(context);
     } catch (e) {
       ScaffoldMessenger.of(
