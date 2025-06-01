@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nab/models/booking.dart';
 import 'package:nab/pages/customer/cus_booking.dart';
 import 'package:nab/utils/booking_provider.dart';
 import 'package:nab/utils/user_provider.dart';
@@ -20,7 +19,6 @@ class CustomerHomePage extends StatefulWidget {
 class _CustomerHomePageState extends State<CustomerHomePage>
     with AutomaticKeepAliveClientMixin<CustomerHomePage> {
   bool _hasFetchedBookings = false;
-  bool _hasFetchedListings = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -77,8 +75,6 @@ class _CustomerHomePageState extends State<CustomerHomePage>
       ),
     );
   }
-
-  void _createBookingFromHistory(BookingModel booking) {}
 
   @override
   Widget build(BuildContext context) {
@@ -344,9 +340,6 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                     Consumer<ListingProvider>(
                       builder: (context, listingProvider, child) {
                         final listings = listingProvider.listings;
-                        print(
-                          'Rebuilding listings widget, count: ${listingProvider.listings.length}',
-                        );
                         if (listings.isEmpty) {
                           return const SizedBox(
                             height: 207,

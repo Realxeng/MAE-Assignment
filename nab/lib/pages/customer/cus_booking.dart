@@ -41,7 +41,6 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
   LatLng? _center;
 
   void _onMapCreated(GoogleMapController controller) {
-    print("Google Map created");
     setState(() {
       mapController = controller;
     });

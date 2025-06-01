@@ -67,7 +67,6 @@ class _CustomerBookingListPageState extends State<CustomerBookingListPage>
         child: Consumer<BookingProvider>(
           builder: (context, bookingProvider, _) {
             final bookings = bookingProvider.bookings;
-            print('Bookings length: ${bookings.length}');
             if (bookings.isEmpty) {
               return const Center(
                 child: Text(
