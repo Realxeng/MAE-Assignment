@@ -10,7 +10,7 @@ class UserModel {
   final String? township;
   final String? username;
   final String? profileImage;
-  final DateTime? dateCreated;
+  final Timestamp? dateCreated;
 
   UserModel({
     required this.id,
@@ -40,7 +40,7 @@ class UserModel {
       township: data['township'],
       username: data['username'],
       profileImage: data['picture'],
-      dateCreated: data['dateCreated'] as DateTime?,
+      dateCreated: data['dateCreated'] as Timestamp?,
     );
   }
 
@@ -54,7 +54,7 @@ class UserModel {
       'township': township,
       'username': username,
       'picture': profileImage,
-      'dateCreated': dateCreated?.toIso8601String(),
+      'dateCreated': dateCreated?.toDate(),
     };
   }
 }

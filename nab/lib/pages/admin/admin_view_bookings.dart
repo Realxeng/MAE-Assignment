@@ -95,16 +95,16 @@ class _ViewBookingsPageState extends State<ViewBookingsPage> with AutomaticKeepA
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Person ${index + 1}',
+                            'Booking ${index + 1}',
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                                 color: Colors.white),
                           ),
                           const SizedBox(height: 10),
-                          _buildLabelValue('USERNAME', cusname),
-                          _buildLabelValue('CREATED AT', formattedDate),
-                          _buildLabelValue('CAR MODEL', carModel),
+                          _buildLabelValue('Customer Name', cusname),
+                          _buildLabelValue('Created At', formattedDate),
+                          _buildLabelValue('Car Model', carModel),
                           if (isExpanded) ...[
                             const SizedBox(height: 12),
                             if (carImageUrl.isNotEmpty)
@@ -118,10 +118,10 @@ class _ViewBookingsPageState extends State<ViewBookingsPage> with AutomaticKeepA
                                 ),
                               ),
                             const SizedBox(height: 12),
-                            _buildLabelValue('NOTES', notes),
-                            _buildLabelValue('PRICE', price),
-                            _buildLabelValue('VENDOR NAME', vendorName),
-                            _buildLabelValue('BOOKING STATUS',
+                            _buildLabelValue('Nnotes', notes),
+                            _buildLabelValue('Price', price),
+                            _buildLabelValue('Vendor Name', vendorName),
+                            _buildLabelValue('Booking Status',
                                 bookingStatus.toUpperCase()),
                           ],
                           const SizedBox(height: 12),
