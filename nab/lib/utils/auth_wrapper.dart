@@ -56,7 +56,7 @@ class AuthWrapper {
   Future<void> signOut(BuildContext context) async {
     try {
       await _auth.signOut();
-      Navigator.pushNamedAndRemoveUntil(context, '/landing', (route) => false);
+      Navigator.pushNamed(context, '/landing');
     } catch (e) {
       log('Error signing out: $e');
     }
