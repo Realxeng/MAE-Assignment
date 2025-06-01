@@ -52,15 +52,21 @@ class BookingModel {
     if (carRef != null) {
       final carSnap = await carRef.get();
       car = ListingModel.fromDocument(carSnap);
+    } else {
+      throw Exception('Listing reference is not found');
     }
 
     if (customerRef != null) {
       final customerSnap = await customerRef.get();
       customer = UserModel.fromDocument(customerSnap);
+    } else {
+      throw Exception('Customer reference is not found');
     }
     if (vendorRef != null) {
       final vendorSnap = await vendorRef.get();
       vendor = UserModel.fromDocument(vendorSnap);
+    } else {
+      throw Exception('Vendor reference is not found');
     }
 
     return BookingModel(
