@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:nab/pages/common/user_edit_profile.dart';
+import 'package:nab/pages/customer/cus_booking.dart';
 import 'package:nab/pages/customer/cus_explore.dart';
 import 'package:nab/pages/customer/cus_home_page.dart';
+import 'package:nab/utils/listing_provider.dart';
+import 'package:provider/provider.dart';
 
 class CustomerMainPage extends StatefulWidget {
   final String uid;
@@ -22,8 +26,7 @@ class _CustomerMainPageState extends State<CustomerMainPage> {
     _pages = [
       CustomerHomePage(uid: widget.uid, onTabChange: _onTabChange),
       CustomerExplorePage(uid: widget.uid, onTabChange: _onTabChange),
-      //CustomerNotificationPage(uid: widget.uid),
-      //CustomerProfilePage(uid: widget.uid),
+      EditProfilePage(uid: widget.uid),
     ];
   }
 
@@ -39,6 +42,12 @@ class _CustomerMainPageState extends State<CustomerMainPage> {
     if (_selectedIndex != index) {
       setState(() {
         _selectedIndex = index;
+      });
+    }
+    if (_selectedIndex == 0) {
+      setState(() {
+        final listingProvider = context.read<ListingProvider>();
+        listingProvider.fetchAvailableListings();
       });
     }
   }

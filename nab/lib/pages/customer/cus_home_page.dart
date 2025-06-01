@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nab/models/booking.dart';
+import 'package:nab/pages/customer/cus_booking.dart';
 import 'package:nab/utils/booking_provider.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -43,9 +45,9 @@ class _CustomerHomePageState extends State<CustomerHomePage>
 
     if (user != null && !_hasFetchedBookings) {
       context.read<BookingProvider>().fetchPastBookings(user);
-      context.read<ListingProvider>().fetchAvailableListings();
-      //_hasFetchedBookings = true;
+      _hasFetchedBookings = true;
     }
+    context.read<ListingProvider>().fetchAvailableListings();
   }
 
   ImageProvider _getProfileImage() {
@@ -59,6 +61,22 @@ class _CustomerHomePageState extends State<CustomerHomePage>
     widget.onTabChange?.call(1);
   }
 
+  void _createBooking(String plate) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => CustomerBookingPage(
+              uid: widget.uid,
+              onTabChange: (index) {},
+              plate: plate,
+            ),
+      ),
+    );
+  }
+
+  void _createBookingFromHistory(BookingModel booking) {}
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -69,7 +87,7 @@ class _CustomerHomePageState extends State<CustomerHomePage>
     final username = user.username ?? "User";
     final fullName = user.fullName ?? "";
     const borderRadius = BorderRadius.all(Radius.circular(16));
-    final bgColor = Color.fromARGB(255, 200, 200, 200);
+    final bgColor = Color.fromARGB(255, 140, 200, 255);
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
@@ -172,13 +190,15 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                                 try {
                                   await context.read<UserProvider>().signOut();
                                 } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "Failed to make SOS call: $e",
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Failed to make SOS call: $e",
+                                        ),
                                       ),
-                                    ),
-                                  );
+                                    );
+                                  }
                                 }
                               },
                               child: Container(
@@ -309,12 +329,17 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                             itemCount: listings.length,
                             itemBuilder: (context, index) {
                               final listing = listings[index];
-                              return _CarCard(
-                                title: listing.carModel ?? 'Car Model',
-                                plateNumber: listing.carPlate,
-                                image: MemoryImage(
-                                  ImageConstants.constants.decodeBase64(
-                                    listing.image ?? '',
+                              return InkWell(
+                                onTap: () {
+                                  _createBooking(listing.carPlate ?? "");
+                                },
+                                child: _CarCard(
+                                  title: listing.carModel ?? 'Car Model',
+                                  plateNumber: listing.carPlate,
+                                  image: MemoryImage(
+                                    ImageConstants.constants.decodeBase64(
+                                      listing.image ?? '',
+                                    ),
                                   ),
                                 ),
                               );
@@ -403,7 +428,11 @@ class _CustomerHomePageState extends State<CustomerHomePage>
     if (await canLaunchUrl(emergencyUri)) {
       await launchUrl(emergencyUri, mode: LaunchMode.externalApplication);
     } else {
-      print('Could not launch phone dialer.');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to open dialer app.")));
+      }
     }
   }
 }

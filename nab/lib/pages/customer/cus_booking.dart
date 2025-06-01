@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:nab/models/listing.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/booking_provider.dart';
 import 'package:nab/utils/listing_provider.dart';
+import 'package:nab/utils/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class CustomerBookingPage extends StatefulWidget {
   final String uid;
-  final String plate; // Id of car/listing being booked
+  final void Function(int)? onTabChange;
+  final String? plate;
 
   const CustomerBookingPage({
     super.key,
     required this.uid,
+    required this.onTabChange,
     required this.plate,
   });
 
@@ -18,14 +22,19 @@ class CustomerBookingPage extends StatefulWidget {
   State<CustomerBookingPage> createState() => _CustomerBookingPageState();
 }
 
-class _CustomerBookingPageState extends State<CustomerBookingPage> {
+class _CustomerBookingPageState extends State<CustomerBookingPage>
+    with AutomaticKeepAliveClientMixin<CustomerBookingPage> {
   bool _isLoading = true;
   String carModel = '';
   String carPlate = '';
+  String carType = '';
+  String condition = '';
   String? base64Image;
   String vendorName = '';
   String vendorContact = '';
   String vendorAddress = '';
+  String vendorPicture = '';
+  late ListingModel listing;
 
   @override
   void initState() {
@@ -33,39 +42,79 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
     _loadBookingDetails();
   }
 
+  @override
+  bool get wantKeepAlive => true;
+
   Future<void> _loadBookingDetails() async {
-    final listingProvider = context.read<ListingProvider>();
-    await listingProvider.fetchListingsByPlate(widget.plate);
-    final listing = listingProvider.listings;
-    setState(() {
-      carModel = listing[0].carModel ?? "";
-      carPlate = listing[0].carPlate ?? "";
-      base64Image = listing[0].image ?? "";
-      vendorName = listing[0].user?.fullName ?? "";
-      vendorContact = listing[0].contactNumber.toString() ?? "";
-      vendorAddress = listing[0].user?.township ?? "";
-      _isLoading = false;
-    });
+    final listing = context.read<ListingProvider>().singleListing;
+    try {
+      await context.read<ListingProvider>().fetchListingsByPlate(
+        widget.plate ?? "",
+      );
+
+      if (listing != null) {
+        this.listing = listing;
+        final vendor = listing.user;
+        if (vendor != null) {
+          setState(() {
+            carModel = listing.carModel ?? "";
+            carPlate = listing.carPlate ?? "";
+            base64Image = listing.image ?? "";
+            carType = listing.carType ?? "";
+            condition = listing.vehicleCondition ?? "";
+            vendorName = vendor.fullName ?? "";
+            vendorContact = listing.contactNumber?.toString() ?? "";
+            vendorAddress = vendor.township ?? "";
+            vendorPicture = vendor.profileImage ?? "";
+            _isLoading = false; // <-- Add this line here!
+          });
+        } else {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Error fetching vendor data")),
+          );
+        }
+      } else {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error fetching listing data")),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to fetch listing: $e")));
+    }
   }
 
-  void _confirmBooking() {
+  void _confirmBooking(String notes) {
+    final bookingProvider = context.watch<BookingProvider>();
+    final userProvider = context.watch<UserProvider>();
+    userProvider.fetchUserData(widget.uid);
+    final user = userProvider.user;
+    bookingProvider.addBooking(listing, listing.user!, user!, notes);
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Booking Confirmed!')));
+    ).showSnackBar(const SnackBar(content: Text('Booking Sent!')));
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageProvider =
+    super.build(context);
+    final carImageProvider =
         (base64Image != null && base64Image!.isNotEmpty)
             ? MemoryImage(ImageConstants.constants.decodeBase64(base64Image!))
             : null;
-
+    final vendorImageProvider =
+        (vendorPicture != "" && vendorPicture.isNotEmpty)
+            ? MemoryImage(ImageConstants.constants.decodeBase64(vendorPicture))
+            : null;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Car Booking"),
-        backgroundColor: Colors.grey[900],
-        leading: BackButton(color: Colors.white),
+        backgroundColor: const Color.fromARGB(255, 200, 200, 200),
+        leading: BackButton(color: const Color.fromARGB(255, 0, 0, 0)),
       ),
       backgroundColor: Colors.grey[850],
       body:
@@ -93,7 +142,7 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Car Info Card
+                    // Car Image Container
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[900],
@@ -102,55 +151,81 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
                           BoxShadow(color: Colors.black45, blurRadius: 6),
                         ],
                       ),
-                      child: Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                            child:
-                                imageProvider != null
-                                    ? Image(
-                                      image: imageProvider,
-                                      height: 180,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                    )
-                                    : Container(
-                                      height: 180,
-                                      color: Colors.grey[700],
-                                      child: const Icon(
-                                        Icons.directions_car,
-                                        size: 80,
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Text(
-                              "$carModel\n$carPlate",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ],
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child:
+                            carImageProvider != null
+                                ? Image(
+                                  image: carImageProvider,
+                                  height: 280,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                )
+                                : Container(
+                                  height: 180,
+                                  color: Colors.grey[700],
+                                  child: const Icon(
+                                    Icons.directions_car,
+                                    size: 80,
+                                    color: Colors.white70,
+                                  ),
+                                ),
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
 
-                    // Vendor Info Card
-                    Text(
-                      "Vendor",
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                    // Car Details Container
+                    Container(
+                      width: double.infinity, // <--- add this
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black45, blurRadius: 6),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            carModel,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 24,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                          Text(
+                            carPlate,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                          Text(
+                            "Car Type: $carType",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                          Text(
+                            "Condition: $condition",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -164,16 +239,25 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
                         children: [
                           CircleAvatar(
                             backgroundColor: Colors.grey[700],
-                            child: Text(
-                              vendorName.isNotEmpty
-                                  ? vendorName[0].toUpperCase()
-                                  : "?",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                              ),
-                            ),
+                            radius: 28,
+                            child:
+                                vendorImageProvider != null
+                                    ? Image(
+                                      image: vendorImageProvider,
+                                      height: 220,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                    : Text(
+                                      vendorName.isNotEmpty
+                                          ? vendorName[0].toUpperCase()
+                                          : "?",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -188,10 +272,16 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
                                     fontSize: 16,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  vendorContact,
-                                  style: const TextStyle(color: Colors.white70),
+                                Row(
+                                  children: [
+                                    Icon(Icons.call, size: 16),
+                                    Text(
+                                      vendorContact,
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 Text(
                                   vendorAddress,
@@ -209,7 +299,9 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _confirmBooking,
+                        onPressed: () {
+                          _confirmBooking("");
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueAccent,
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -222,6 +314,7 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                       ),

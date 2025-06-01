@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nab/pages/customer/cus_booking.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/listing_provider.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,20 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
     'Electric',
     'Hybrid',
   ];
+
+  void _createBooking(String plate) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => CustomerBookingPage(
+              uid: widget.uid,
+              onTabChange: (index) {},
+              plate: plate,
+            ),
+      ),
+    );
+  }
 
   void _searchCarByType(String type) {
     final searchType = type.trim();
@@ -59,12 +74,13 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Ensure keep alive works
+    super.build(context);
+    const headerBlue = Color.fromARGB(255, 140, 200, 255);
     return Scaffold(
       backgroundColor: Colors.grey[850],
       // App bar with title
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 200, 200, 200),
+        backgroundColor: headerBlue,
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -83,12 +99,7 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
           children: [
             // Search bar
             Container(
-              color: const Color.fromARGB(
-                255,
-                200,
-                200,
-                200,
-              ), // distinct background color for top section
+              color: headerBlue,
               child: Column(
                 children: [
                   // Search Bar
@@ -112,6 +123,8 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
                         ),
                         Expanded(
                           child: TextField(
+                            style: TextStyle(color: Colors.white),
+                            cursorColor: Colors.grey[300],
                             onSubmitted: (value) => _searchCarByType(value),
                             controller: _searchController,
                             decoration: const InputDecoration(
@@ -213,88 +226,93 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
                             );
                           }
                         } catch (_) {
-                          // handle image decode error if any
                           imageProvider = null;
                         }
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[900],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            children: [
-                              // Placeholder image area
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[300],
-                                    borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(10),
+                        return InkWell(
+                          onTap: () {
+                            _createBooking(listing.carPlate ?? "");
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              children: [
+                                // Placeholder image area
+                                Expanded(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[300],
+                                      borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(10),
+                                      ),
                                     ),
-                                  ),
-                                  child:
-                                      imageProvider != null
-                                          ? ClipRRect(
-                                            borderRadius:
-                                                const BorderRadius.vertical(
-                                                  top: Radius.circular(10),
+                                    child:
+                                        imageProvider != null
+                                            ? ClipRRect(
+                                              borderRadius:
+                                                  const BorderRadius.vertical(
+                                                    top: Radius.circular(10),
+                                                  ),
+                                              child: Image(
+                                                image: imageProvider,
+                                                fit: BoxFit.cover,
+                                                width: double.infinity,
+                                              ),
+                                            )
+                                            : Center(
+                                              child: Icon(
+                                                Icons.cloud,
+                                                size: 64,
+                                                color: const Color.fromRGBO(
+                                                  255,
+                                                  255,
+                                                  255,
+                                                  0.7,
                                                 ),
-                                            child: Image(
-                                              image: imageProvider,
-                                              fit: BoxFit.cover,
-                                              width: double.infinity,
-                                            ),
-                                          )
-                                          : Center(
-                                            child: Icon(
-                                              Icons.cloud,
-                                              size: 64,
-                                              color: const Color.fromRGBO(
-                                                255,
-                                                255,
-                                                255,
-                                                0.7,
                                               ),
                                             ),
-                                          ),
-                                ),
-                              ),
-                              // Car name and code
-                              Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[900],
-                                  borderRadius: const BorderRadius.vertical(
-                                    bottom: Radius.circular(10),
                                   ),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      listing.carModel ?? 'Unknown Model',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                      ),
-                                      textAlign: TextAlign.center,
+                                // Car name and code
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[900],
+                                    borderRadius: const BorderRadius.vertical(
+                                      bottom: Radius.circular(10),
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      listing.carPlate ?? 'N/A',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                        letterSpacing: 1.2,
-                                        color: Colors.white70,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        listing.carModel ?? 'Unknown Model',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                        textAlign: TextAlign.center,
                                       ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        listing.carPlate ?? 'N/A',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          letterSpacing: 1.2,
+                                          color: Colors.white70,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
