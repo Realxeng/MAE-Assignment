@@ -7,8 +7,14 @@ import 'package:nab/models/user.dart';
 
 class BookingProvider extends ChangeNotifier {
   StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _bookingSubscription;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _listingSubscription;
+
   List<BookingModel> _bookings = [];
   List<BookingModel> get bookings => _bookings;
+
+  // NEW: List and getter for car listings
+  List<ListingModel> _listings = [];
+  List<ListingModel> get listings => _listings;
 
   BookingProvider() {
     fetchAllBookings();
@@ -17,9 +23,11 @@ class BookingProvider extends ChangeNotifier {
   @override
   void dispose() {
     _bookingSubscription?.cancel();
+    _listingSubscription?.cancel(); // Also cancel the listings subscription
     super.dispose();
   }
 
+  // -------------- EXISTING BOOKING METHODS (unchanged) -----------------
   Future<void> fetchAllBookings() async {
     await _bookingSubscription?.cancel();
     _bookingSubscription = FirebaseFirestore.instance
@@ -192,5 +200,37 @@ class BookingProvider extends ChangeNotifier {
     }
 
     return incomeByMonth;
+  }
+
+  // -------------- NEW: FETCH RENTAL LISTINGS FOR THE VENDOR ---------------
+
+  Future<void> fetchVendorListings(UserModel vendor) async {
+    await _listingSubscription?.cancel();
+
+    final vendorRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(vendor.id);
+    _listingSubscription = FirebaseFirestore.instance
+        .collection('listing') // Make sure your collection is named correctly
+        .where('vendor', isEqualTo: vendorRef)
+        .snapshots()
+        .listen(
+          (querySnapshot) {
+            _listings =
+                querySnapshot.docs
+                    .map((doc) => ListingModel.fromDocument(doc))
+                    .toList();
+            notifyListeners();
+          },
+          onError: (err) {
+            _listings = [];
+            notifyListeners();
+          },
+        );
+  }
+
+  void clearListings() {
+    _listings.clear();
+    notifyListeners();
   }
 }

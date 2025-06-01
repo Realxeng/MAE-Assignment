@@ -10,6 +10,7 @@ class ListingProvider extends ChangeNotifier {
   List<ListingModel> listingFiltered = [];
   ListingModel? _singleListing;
   ListingModel? get singleListing => _singleListing;
+
   ListingProvider() {
     fetchAllListings();
   }
@@ -18,6 +19,31 @@ class ListingProvider extends ChangeNotifier {
   void dispose() {
     _listingSubscription?.cancel();
     super.dispose();
+  }
+
+  Future<void> fetchListingsByVendor(String vendorId) async {
+    await _listingSubscription?.cancel();
+
+    final vendorRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(vendorId);
+    _listingSubscription = FirebaseFirestore.instance
+        .collection('listing')
+        .where('vendor', isEqualTo: vendorRef)
+        .snapshots()
+        .listen(
+          (querySnapshot) {
+            _listingModel =
+                querySnapshot.docs
+                    .map((doc) => ListingModel.fromDocument(doc))
+                    .toList();
+            notifyListeners();
+          },
+          onError: (error) {
+            _listingModel = [];
+            notifyListeners();
+          },
+        );
   }
 
   Future<void> fetchAllListings() async {
@@ -47,10 +73,7 @@ class ListingProvider extends ChangeNotifier {
     _listingSubscription = FirebaseFirestore.instance
         .collection('listing')
         .where('status', isEqualTo: 'accepted')
-        .where(
-          'carType',
-          isEqualTo: type.toLowerCase(),
-        ) // assuming your listing has a 'type' field
+        .where('carType', isEqualTo: type.toLowerCase())
         .snapshots()
         .listen(
           (querySnapshot) async {
@@ -90,7 +113,6 @@ class ListingProvider extends ChangeNotifier {
           },
         );
   }
-
 
   Future<void> fetchAcceptedListings() async {
     await _listingSubscription?.cancel();

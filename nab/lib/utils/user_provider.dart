@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:nab/pages/admin/admin_main.dart';
 import 'package:nab/pages/customer/cus_main.dart';
+import 'package:nab/pages/vendor/vendor_listing.dart';
 import 'package:nab/pages/vendor/vendor_summary.dart';
 import 'package:nab/models/user.dart';
 import 'package:nab/utils/image_provider.dart';
@@ -180,5 +181,12 @@ class UserProvider extends ChangeNotifier {
     } catch (e) {
       throw Exception('Failed to delete user: $e');
     }
+  }
+
+  Future<void> signOut() async {
+    await FirebaseAuth.instance.signOut();
+    _userModel = null;
+    notifyListeners();
+    onSignedOut?.call();
   }
 }
