@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:nab/pages/common/user_edit_profile.dart';
 import 'package:nab/pages/vendor/rental_listing.dart';
+// Import your rental_income_breakdown.dart file here:
+import 'package:nab/pages/vendor/rental_income_breakdown.dart';
 
 class VendorHomePage extends StatefulWidget {
   final String uid;
@@ -69,7 +71,7 @@ class _VendorHomePageState extends State<VendorHomePage> {
                 ),
                 const SizedBox(height: 8),
 
-                /// Monthly Earnings and See More
+                /// Monthly Earnings and See More Row with navigation
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -81,12 +83,25 @@ class _VendorHomePageState extends State<VendorHomePage> {
                         color: lightText,
                       ),
                     ),
-                    Text(
-                      "See More",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: headerBlue,
-                        decoration: TextDecoration.underline,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => MonthlyEarningsBreakdownPage(
+                                  vendorUid: uid,
+                                ),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "See More",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: headerBlue,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ],
@@ -176,66 +191,6 @@ class _VendorHomePageState extends State<VendorHomePage> {
                         borderData: FlBorderData(show: false),
                       ),
                     ),
-                  ),
-                ),
-
-                /// Dashboard Actions Grid
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: GridView(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 15,
-                          crossAxisSpacing: 15,
-                          childAspectRatio: 1.6,
-                        ),
-                    children: [
-                      _DashboardAction(
-                        icon: Icons.cloud_upload_outlined,
-                        label: "Upload Document",
-                        onTap: () {},
-                        backgroundColor: Colors.grey[800],
-                        iconColor: headerBlue,
-                        textColor: lightText,
-                      ),
-                      _DashboardAction(
-                        icon: Icons.account_balance_wallet_outlined,
-                        label: "Withdraw",
-                        onTap: () {},
-                        backgroundColor: Colors.grey[800],
-                        iconColor: headerBlue,
-                        textColor: lightText,
-                      ),
-                      _DashboardAction(
-                        icon: Icons.people_outline,
-                        label: "Reviews & Feedback",
-                        onTap: () {},
-                        backgroundColor: Colors.grey[800],
-                        iconColor: headerBlue,
-                        textColor: lightText,
-                      ),
-                      _DashboardAction(
-                        icon: Icons.star,
-                        label: "Ratings",
-                        onTap: () {},
-                        backgroundColor: Colors.grey[800],
-                        iconColor: headerBlue,
-                        textColor: lightText,
-                        extraWidget: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.star, color: Colors.amber, size: 18),
-                            Icon(Icons.star, color: Colors.amber, size: 18),
-                            Icon(Icons.star, color: Colors.amber, size: 18),
-                            Icon(Icons.star, color: Colors.grey, size: 18),
-                            Icon(Icons.star, color: Colors.grey, size: 18),
-                          ],
-                        ),
-                      ),
-                    ],
                   ),
                 ),
 
