@@ -46,7 +46,7 @@ class _CustomerHomePageState extends State<CustomerHomePage>
       context.read<BookingProvider>().fetchPastBookings(user);
       _hasFetchedBookings = true;
     }
-    context.read<ListingProvider>().fetchAvailableListings();
+    context.read<ListingProvider>().fetchAcceptedListings();
   }
 
   ImageProvider _getProfileImage() {

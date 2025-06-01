@@ -47,7 +47,7 @@ class _CustomerMainPageState extends State<CustomerMainPage> {
     }
     if (_selectedIndex == 0) {
       setState(() {
-        context.read<ListingProvider>().fetchAvailableListings();
+        context.read<ListingProvider>().fetchAcceptedListings();
       });
     }
   }

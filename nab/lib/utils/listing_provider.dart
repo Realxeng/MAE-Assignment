@@ -41,28 +41,6 @@ class ListingProvider extends ChangeNotifier {
         );
   }
 
-  Future<void> fetchAvailableListings() async {
-    await _listingSubscription?.cancel();
-
-    _listingSubscription = FirebaseFirestore.instance
-        .collection('listing')
-        .where('status', isEqualTo: 'accepted')
-        .snapshots()
-        .listen(
-          (querySnapshot) {
-            _listingModel =
-                querySnapshot.docs
-                    .map((doc) => ListingModel.fromDocument(doc))
-                    .toList();
-            notifyListeners();
-          },
-          onError: (error) {
-            _listingModel = [];
-            notifyListeners();
-          },
-        );
-  }
-
   Future<void> fetchAcceptedListingsByType(String type) async {
     await _listingSubscription?.cancel();
 
@@ -112,6 +90,7 @@ class ListingProvider extends ChangeNotifier {
           },
         );
   }
+
 
   Future<void> fetchAcceptedListings() async {
     await _listingSubscription?.cancel();

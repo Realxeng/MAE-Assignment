@@ -47,7 +47,7 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
   void _searchCarByType(String type) {
     if (type.isEmpty) {
       // Reset to show all
-      context.read<ListingProvider>().fetchAvailableListings();
+      context.read<ListingProvider>().fetchAcceptedListings();
     } else {
       context.read<ListingProvider>().fetchListingsByType(type);
     }
@@ -65,7 +65,7 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
       context,
       listen: false,
     );
-    listingProvider.fetchAvailableListings();
+    listingProvider.fetchAcceptedListings();
   }
 
   @override
