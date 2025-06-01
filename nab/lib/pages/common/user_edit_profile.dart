@@ -380,6 +380,30 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               ),
                             ),
                             const SizedBox(height: 16),
+                            // Inside your Column children, below the Logout button:
+                            const SizedBox(height: 16),
+
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed:
+                                    _isSaving ? null : _confirmDeleteAccount,
+                                icon: const Icon(
+                                  Icons.delete_forever,
+                                  color: Colors.redAccent,
+                                ),
+                                label: const Text(
+                                  'Delete Account',
+                                  style: TextStyle(color: Colors.redAccent),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
                           ],
                         ),
                       ),
@@ -425,5 +449,101 @@ class _EditProfilePageState extends State<EditProfilePage> {
         borderSide: BorderSide(color: Colors.lightBlue.shade300, width: 2),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteAccount() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final reauthenticated = await _showReauthenticateDialog(
+      context,
+      user.email ?? '',
+    );
+
+    if (!reauthenticated) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      await userProvider.deleteUserAccount();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account deleted successfully')),
+      );
+
+      // Navigate after deletion
+      Navigator.of(context).pushReplacementNamed('/login');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to delete account: $e')));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<bool> _showReauthenticateDialog(
+    BuildContext context,
+    String? currentEmail,
+  ) async {
+    final _emailController = TextEditingController(text: currentEmail);
+    final _passwordController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Re-authenticate'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  readOnly: true, // Usually you don't allow changing email here
+                ),
+                TextField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(labelText: 'Password'),
+                  obscureText: true,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Confirm'),
+              ),
+            ],
+          ),
+    );
+
+    if (result != true) return false;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: _passwordController.text.trim(),
+    );
+
+    try {
+      await user.reauthenticateWithCredential(credential);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Re-authentication failed: ${e.message}')),
+      );
+      return false;
+    }
   }
 }
