@@ -74,18 +74,4 @@ class BookingModel {
       vendor: vendor,
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'createdAt': createdAt,
-      'dateEnded': dateEnded,
-      'dateStarted': dateStarted,
-      'notes': notes,
-      'price': price,
-      'status': status,
-      'car': car,
-      'customer': customer,
-      'vendor': vendor,
-    };
-  }
 }
