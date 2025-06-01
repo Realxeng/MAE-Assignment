@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nab/models/listing.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/booking_provider.dart';
@@ -35,15 +37,12 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
   String vendorAddress = '';
   String vendorPicture = '';
   late ListingModel listing;
+  late GoogleMapController mapController;
+  LatLng? _center;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadBookingDetails();
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
   }
-
-  @override
-  bool get wantKeepAlive => true;
 
   Future<void> _loadBookingDetails() async {
     try {
@@ -51,6 +50,7 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
         widget.plate ?? "",
       );
       final listing = context.read<ListingProvider>().singleListing;
+
       if (listing != null) {
         this.listing = listing;
         final vendor = listing.user;
@@ -85,6 +85,61 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
         context,
       ).showSnackBar(SnackBar(content: Text("Failed to fetch listing: $e")));
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBookingDetails();
+    _determinePosition();
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  Future<void> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location services are disabled.')),
+      );
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permissions are denied')),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Location permissions are permanently denied, we cannot request permissions.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    // When permissions are granted, get the position.
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    setState(() {
+      _center = LatLng(position.latitude, position.longitude);
+    });
   }
 
   void _confirmBooking(String notes) async {
@@ -133,11 +188,20 @@ class _CustomerBookingPageState extends State<CustomerBookingPage>
                         color: Colors.grey[700],
                       ),
                       child: Center(
-                        child: Text(
-                          'Map Placeholder\n(Integrate Google Map or other here)',
-                          style: TextStyle(color: Colors.white70),
-                          textAlign: TextAlign.center,
-                        ),
+                        child:
+                            _center == null
+                                ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                                : GoogleMap(
+                                  onMapCreated: _onMapCreated,
+                                  initialCameraPosition: CameraPosition(
+                                    target: _center!,
+                                    zoom: 14.0,
+                                  ),
+                                  myLocationEnabled: true,
+                                  myLocationButtonEnabled: true,
+                                ),
                       ),
                     ),
                     const SizedBox(height: 16),

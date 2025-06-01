@@ -65,6 +65,7 @@ class BookingProvider extends ChangeNotifier {
     _bookingSubscription = FirebaseFirestore.instance
         .collection('bookings')
         .where('customer', isEqualTo: userDocRef)
+        .where('dateEnded', isNotEqualTo: null)
         .where('dateEnded', isLessThan: DateTime.now())
         .snapshots()
         .listen(
@@ -96,6 +97,33 @@ class BookingProvider extends ChangeNotifier {
               querySnapshot.docs.map((doc) async {
                 return await BookingModel.fromDocumentAsync(doc);
               }),
+            );
+            notifyListeners();
+          },
+          onError: (error) {
+            _bookings = [];
+            notifyListeners();
+          },
+        );
+  }
+
+  Future<void> fetchActiveBookings(UserModel user) async {
+    DocumentReference userDocRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.id);
+    await _bookingSubscription?.cancel();
+
+    _bookingSubscription = FirebaseFirestore.instance
+        .collection('bookings')
+        .where('status', isNotEqualTo: 'finished')
+        .where('customer', isEqualTo: userDocRef)
+        .snapshots()
+        .listen(
+          (querySnapshot) async {
+            _bookings = await Future.wait(
+              querySnapshot.docs.map(
+                (doc) => BookingModel.fromDocumentAsync(doc),
+              ),
             );
             notifyListeners();
           },

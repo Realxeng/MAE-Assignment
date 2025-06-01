@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nab/pages/common/user_edit_profile.dart';
-import 'package:nab/pages/customer/cus_booking.dart';
+import 'package:nab/pages/customer/cus_booking_list.dart';
 import 'package:nab/pages/customer/cus_explore.dart';
 import 'package:nab/pages/customer/cus_home_page.dart';
 import 'package:nab/utils/listing_provider.dart';
@@ -26,6 +26,7 @@ class _CustomerMainPageState extends State<CustomerMainPage> {
     _pages = [
       CustomerHomePage(uid: widget.uid, onTabChange: _onTabChange),
       CustomerExplorePage(uid: widget.uid, onTabChange: _onTabChange),
+      CustomerBookingListPage(uid: widget.uid, onTabChange: _onTabChange),
       EditProfilePage(uid: widget.uid),
     ];
   }
