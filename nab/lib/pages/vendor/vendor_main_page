@@ -1,0 +1,181 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chart/fl_chart.dart'; // Use fl_chart for the income chart
+import 'package:intl/intl.dart';
+
+class VendorDashboard extends StatefulWidget {
+  const VendorDashboard({Key? key}) : super(key: key);
+
+  @override
+  State<VendorDashboard> createState() => _VendorDashboardState();
+}
+
+class _VendorDashboardState extends State<VendorDashboard> {
+  UserModel? currentVendor;
+  bool isLoading = true;
+  List<BookingModel> bookings = [];
+  Map<String, double> monthlyIncome = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _initDashboard();
+  }
+
+  Future<void> _initDashboard() async {
+    // Make sure that UserProvider().getCurrentUser() returns a UserModel (vendor)
+    currentVendor = await UserProvider().getCurrentUser();
+
+    // Fetch this vendor's bookings (adjust field names as per your database)
+    final vendorRef = FirebaseFirestore.instance.collection('users').doc(currentVendor!.id);
+
+    final bookingSnaps = await FirebaseFirestore.instance
+        .collection('bookings')
+        .where('vendor', isEqualTo: vendorRef)
+        .orderBy('dateStarted', descending: true)
+        .get();
+
+    final List<BookingModel> loadedBookings = [];
+    final Map<String, double> incomeMap = {};
+
+    for (var doc in bookingSnaps.docs) {
+      final booking = await BookingModel.fromDocumentAsync(doc);
+      loadedBookings.add(booking);
+
+      if (booking.status == 'completed' &&
+          booking.dateStarted != null &&
+          booking.price != null) {
+        final mKey = DateFormat('MM-yyyy').format(booking.dateStarted!);
+        incomeMap[mKey] = (incomeMap[mKey] ?? 0) + booking.price!;
+      }
+    }
+
+    setState(() {
+      bookings = loadedBookings;
+      monthlyIncome = incomeMap;
+      isLoading = false;
+    });
+  }
+
+  List<BarChartGroupData> getBarChartData() {
+    // Get last 6 months for display, fill zeros if none
+    final now = DateTime.now();
+    List<BarChartGroupData> bars = [];
+    for (int i = 5; i >= 0; i--) {
+      final month = DateTime(now.year, now.month - i, 1);
+      final key = DateFormat('MM-yyyy').format(month);
+      final income = monthlyIncome[key] ?? 0.0;
+      bars.add(BarChartGroupData(
+        x: 5 - i,
+        barRods: [BarChartRodData(toY: income, color: Colors.blue)],
+        showingTooltipIndicators: [0],
+      ));
+    }
+    return bars;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Vendor Dashboard'),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Monthly Income Chart
+              const Text('Monthly Income Overview', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 220,
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: (monthlyIncome.values.isEmpty
+                            ? 100.0
+                            : monthlyIncome.values.reduce((a, b) => a > b ? a : b) * 1.2)
+                        .clamp(100, double.infinity),
+                    barGroups: getBarChartData(),
+                    gridData: FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 40, interval: 100)),
+                      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 24,
+                          getTitlesWidget: (value, _) {
+                            final now = DateTime.now();
+                            final monthIdx = value.toInt();
+                            final month = DateTime(now.year, now.month - (5 - monthIdx), 1);
+                            return Text(DateFormat('MMM').format(month), style: const TextStyle(fontSize: 13));
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 36),
+
+              // 2. Recent Rentals
+              const Text('Recent Rentals', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              if (bookings.isEmpty)
+                const Text("No rentals yet."),
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: bookings.length > 5 ? 5 : bookings.length,
+                  separatorBuilder: (_, __) => const Divider(),
+                  itemBuilder: (context, i) {
+                    final booking = bookings[i];
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4),
+                      leading: booking.car?.image != null
+                          ? CircleAvatar(
+                              backgroundImage: NetworkImage(booking.car!.image!),
+                              radius: 26,
+                            )
+                          : const CircleAvatar(child: Icon(Icons.directions_car)),
+                      title: Text(booking.car?.carModel ?? 'Unknown Car'),
+                      subtitle: Text('Customer: ${booking.customer?.fullName ?? '-'}'),
+                      trailing: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            booking.price != null
+                                ? '\$${booking.price!.toStringAsFixed(2)}'
+                                : '--',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          if (booking.dateStarted != null)
+                            Text(
+                              DateFormat('dd MMM').format(booking.dateStarted!),
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

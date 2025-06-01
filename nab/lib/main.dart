@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:nab/pages/customer/cus_main.dart';
+import 'package:nab/pages/vendor/vendor_main_page';
 import 'package:nab/utils/booking_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:nab/pages/common/user_login.dart';
 import 'package:nab/pages/admin/admin_home_page.dart';
-import 'package:nab/pages/vendor/vendor_summary.dart';
+
 import 'package:nab/pages/common/landing_page.dart';
 import 'firebase_options.dart';
 import 'utils/auth_router.dart';
@@ -73,7 +74,7 @@ class _MyAppState extends State<MyApp> {
         if (settings.name == '/vendorHome') {
           final args = settings.arguments as Map<String, dynamic>;
           return MaterialPageRoute(
-            builder: (context) => VendorHomePage(uid: args['uid']),
+            builder: (context) => VendorDashboard(uid: args['uid']),
           );
         }
         // Fallback route
