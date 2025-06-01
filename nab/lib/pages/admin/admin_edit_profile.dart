@@ -364,17 +364,6 @@ class _EditAdminProfilePageState extends State<EditAdminProfilePage> {
       );
     }
 
-    Widget _buildReadOnlyField(String label, String value) {
-      return TextFormField(
-        initialValue: value,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-        ),
-        readOnly: true,
-      );
-    }
-
     InputDecoration _inputDecoration(String label) {
       return InputDecoration(
         labelText: label,
