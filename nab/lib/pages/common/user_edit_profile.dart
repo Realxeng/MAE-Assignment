@@ -278,7 +278,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Full Name: ${_email ?? ''}',
+                                'Email: ${_email ?? ''}',
                                 style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(color: Colors.white70),
                               ),
