@@ -54,7 +54,6 @@ class ListingProvider extends ChangeNotifier {
                 querySnapshot.docs
                     .map((doc) => ListingModel.fromDocument(doc))
                     .toList();
-            print('Listings count after fetch: ${listings.length}');
             notifyListeners();
           },
           onError: (error) {
@@ -195,7 +194,6 @@ class ListingProvider extends ChangeNotifier {
             } else {
               _singleListing = null;
             }
-            print("Listing loaded: $_singleListing");
             notifyListeners();
 
             if (!completer.isCompleted) {

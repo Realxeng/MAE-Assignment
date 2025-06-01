@@ -65,9 +65,7 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
       context,
       listen: false,
     );
-    if (listingProvider.listings.isEmpty) {
-      listingProvider.fetchAvailableListings();
-    }
+    listingProvider.fetchAvailableListings();
   }
 
   @override
@@ -199,9 +197,6 @@ class _CustomerExplorePageState extends State<CustomerExplorePage>
                 child: Consumer<ListingProvider>(
                   builder: (context, listingProvider, _) {
                     final listings = listingProvider.listingFiltered;
-                    print(
-                      'Rebuilding listings widget, count: ${listingProvider.listings.length}',
-                    );
                     if (listings.isEmpty) {
                       return const Center(child: Text("No cars to display"));
                     }
