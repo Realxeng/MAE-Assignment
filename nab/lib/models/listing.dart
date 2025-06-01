@@ -41,6 +41,16 @@ class ListingModel {
     );
   }
 
+  get vendorUid => null;
+
+  get views => null;
+
+  get bookmarks => null;
+
+  get carName => null;
+
+  String? get base64Image => null;
+
   static Future<ListingModel> fromDocumentAsync(DocumentSnapshot data) async {
     final userRef = data['user'] as DocumentReference?;
     UserModel? user;

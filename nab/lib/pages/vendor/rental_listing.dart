@@ -1,153 +1,239 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import 'dart:typed_data';
+import 'package:nab/utils/listing_provider.dart';
+import 'package:nab/utils/booking_provider.dart';
+import 'package:nab/utils/user_provider.dart';
+import 'package:nab/utils/image_provider.dart';
 
 class RentalListingPage extends StatelessWidget {
-  final String vendorUid;
+  const RentalListingPage({Key? key}) : super(key: key);
 
-  const RentalListingPage({Key? key, required this.vendorUid})
-    : super(key: key);
-
-  Future<List<Map<String, dynamic>>> fetchVendorListings() async {
-    final snapshot =
-        await FirebaseFirestore.instance
-            .collection('listings')
-            .where('vendorId', isEqualTo: vendorUid)
-            .get();
-
-    return snapshot.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id; // add doc id for reference if needed
-      return data;
-    }).toList();
-  }
-
-  Color _statusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'available':
-        return Colors.green;
-      case 'unavailable':
-        return Colors.red;
-      case 'pending':
-        return Colors.orange;
-      default:
-        return Colors.grey;
+  Widget getCarImage(String? base64Str) {
+    if (base64Str == null || base64Str.isEmpty) {
+      return Icon(Icons.directions_car, size: 32, color: Colors.grey[600]);
+    }
+    try {
+      Uint8List bytes = ImageConstants().decodeBase64(base64Str);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.memory(bytes, width: 76, height: 76, fit: BoxFit.cover),
+      );
+    } catch (e) {
+      return Icon(Icons.directions_car, size: 32, color: Colors.grey[600]);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    const backgroundColor = Colors.grey;
+    final listingProvider = Provider.of<ListingProvider>(context);
+    final bookingProvider = Provider.of<BookingProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+
+    // Optional: filter for listings that belong to the current vendor only
+    final user = userProvider.user;
+    final isVendor = user?.role == 'vendor';
+    final vendorUid = user?.uid ?? '';
+
+    final listings =
+        isVendor
+            ? listingProvider.listings
+                .where((l) => l.vendorUid == vendorUid)
+                .toList()
+            : listingProvider.listings;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Your Listings"),
-        backgroundColor: Colors.blueGrey,
-      ),
-      backgroundColor: backgroundColor[900],
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: fetchVendorListings(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-                style: const TextStyle(color: Colors.white),
-              ),
-            );
-          }
-          final listings = snapshot.data ?? [];
-
-          if (listings.isEmpty) {
-            return const Center(
-              child: Text(
-                "No listings found",
-                style: TextStyle(color: Colors.white70, fontSize: 18),
-              ),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(12),
-            itemCount: listings.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final listing = listings[index];
-              final title = listing['title'] ?? 'Untitled';
-              final status = listing['status'] ?? 'Unknown';
-              final imageBase64 = listing['image'];
-              ImageProvider? imageProvider;
-              try {
-                if (imageBase64 != null &&
-                    imageBase64 is String &&
-                    imageBase64.isNotEmpty) {
-                  imageProvider = MemoryImage(
-                    // Assuming image is base64 encoded string, decode it here
-                    // Import dart:convert at top: import 'dart:convert';
-                    // And decode as:
-                    base64Decode(imageBase64),
-                  );
-                }
-              } catch (_) {
-                imageProvider = null;
-              }
-
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[850],
-                  borderRadius: BorderRadius.circular(10),
+      backgroundColor: Colors.grey[300],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(25, 20, 0, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Listings',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black,
+                  ),
                 ),
-                child: ListTile(
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child:
-                        imageProvider != null
-                            ? Image(
-                              image: imageProvider,
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                            )
-                            : const Icon(
-                              Icons.home_work,
-                              size: 60,
-                              color: Colors.white70,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child:
+                  listings.isEmpty
+                      ? Center(
+                        child: Text(
+                          'No listings found.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      )
+                      : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        itemCount: listings.length,
+                        itemBuilder: (context, index) {
+                          final listing = listings[index];
+
+                          // Booking count for this listing
+                          final int numTimesBooked =
+                              bookingProvider.bookings
+                                  .where((b) => b.listingId == listing.id)
+                                  .length;
+
+                          // These properties should be present in your ListingModel
+                          final int numSeen = listing.views ?? 0;
+                          final int numBookmarked = listing.bookmarks ?? 0;
+
+                          String carName = listing.carName ?? '';
+                          String carModel = listing.carModel ?? '';
+                          String carPlate = listing.carPlate ?? '';
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[500],
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: SizedBox(
+                                      width: 76,
+                                      height: 76,
+                                      child: getCarImage(listing.base64Image),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 8,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '[$carName]',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '[${numSeen}] People saw this listing\n'
+                                            '[${numBookmarked}] People bookmarked this\n'
+                                            'Booked [${numTimesBooked}] times\n'
+                                            '• [other details]',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                  ),
-                  title: Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _statusColor(status),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      status.toString().toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                          );
+                        },
+                      ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 12,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // TODO: Show add new listing page/dialog
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[600],
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'New Listing',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
-                  onTap: () {
-                    // Optionally implement detail or edit page navigation here
-                  },
-                ),
-              );
-            },
-          );
-        },
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // TODO: Edit selected listing logic
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[600],
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Edit This Listing',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // TODO: Delete selected listing logic
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[600],
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
+        ),
       ),
     );
   }

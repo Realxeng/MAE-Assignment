@@ -44,6 +44,8 @@ class UserModel {
     );
   }
 
+  String? get picture => null;
+
   Map<String, dynamic> toJson() {
     return {
       'uid': uid,

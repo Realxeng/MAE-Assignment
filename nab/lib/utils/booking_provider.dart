@@ -155,4 +155,42 @@ class BookingProvider extends ChangeNotifier {
       'vendor': vendorRef,
     };
   }
+
+  /// Calculates total income for a vendor in a specified [year] and [month].
+  /// Only bookings with status "finished" are counted.
+  double calculateMonthlyIncome(String vendorUid, int year, int month) {
+    final filteredBookings = _bookings.where((booking) {
+      if (booking.vendor == null ||
+          booking.dateStarted == null ||
+          booking.price == null ||
+          booking.status == null) {
+        return false;
+      }
+      final bookingMonth = booking.dateStarted!;
+      return booking.vendor!.id == vendorUid &&
+          bookingMonth.year == year &&
+          bookingMonth.month == month &&
+          booking.status == "finished";
+    });
+
+    double totalIncome = 0;
+    for (var booking in filteredBookings) {
+      totalIncome += booking.price!;
+    }
+
+    return totalIncome;
+  }
+
+  /// Calculates total income for all months of [year] for a vendor.
+  /// Returns a map with keys as month (1-12) and values as total income.
+  /// Only bookings with status "finished" are counted.
+  Map<int, double> calculateYearlyIncome(String vendorUid, int year) {
+    final Map<int, double> incomeByMonth = {};
+
+    for (int month = 1; month <= 12; month++) {
+      incomeByMonth[month] = calculateMonthlyIncome(vendorUid, year, month);
+    }
+
+    return incomeByMonth;
+  }
 }

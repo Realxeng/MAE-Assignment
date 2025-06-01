@@ -39,6 +39,8 @@ class BookingModel {
     );
   }
 
+  get listingId => null;
+
   static Future<BookingModel> fromDocumentAsync(DocumentSnapshot data) async {
     final customerRef = data['customer'];
     final vendorRef = data['vendor'];

@@ -1,8 +1,9 @@
+// vendor_home_page.dart
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 import 'package:nab/pages/common/user_edit_profile.dart';
-import 'package:nab/pages/vendor/rental_listing.dart';
-// Import your rental_income_breakdown.dart file here:
+import 'package:nab/utils/booking_provider.dart';
 import 'package:nab/pages/vendor/rental_income_breakdown.dart';
 
 class VendorHomePage extends StatefulWidget {
@@ -15,14 +16,55 @@ class VendorHomePage extends StatefulWidget {
 }
 
 class _VendorHomePageState extends State<VendorHomePage> {
-  int _selectedIndex = 0; // Dashboard now at index 0
+  int _selectedIndex = 0;
 
-  final List<double> monthlyEarnings = const [750, 900, 850, 700, 500, 0];
+  List<double> monthlyEarnings = List.filled(6, 0);
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      _buildDashboard(),
+      _buildPlaceholder('Listing Page'),
+      _buildPlaceholder('Rental Page'),
+      _buildProfile(),
+    ];
+
+    final Color backgroundColor = Colors.grey[900]!;
+    final Color selectedItemColor = const Color.fromARGB(255, 140, 200, 255);
+    final Color unselectedItemColor = Colors.white70;
+
+    return Scaffold(
+      body: pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: backgroundColor,
+        selectedItemColor: selectedItemColor,
+        unselectedItemColor: unselectedItemColor,
+        currentIndex: _selectedIndex,
+        type: BottomNavigationBarType.fixed,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'DASHBOARD',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.car_rental),
+            label: 'LISTING',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment_returned),
+            label: 'RENTAL',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'PROFILE'),
+        ],
+      ),
+    );
   }
 
   Widget _buildDashboard() {
@@ -35,207 +77,299 @@ class _VendorHomePageState extends State<VendorHomePage> {
     return Scaffold(
       backgroundColor: darkBackground,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditProfilePage(uid: uid),
-                          ),
-                        );
-                      },
-                      child: CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Colors.grey[700],
-                        child: const Icon(Icons.person, color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      "Dashboard",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: lightText,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
+        child: Consumer<BookingProvider>(
+          builder: (context, bookingProvider, _) {
+            final incomeMap = bookingProvider.calculateYearlyIncome(
+              uid,
+              DateTime.now().year,
+            );
 
-                /// Monthly Earnings and See More Row with navigation
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            monthlyEarnings = List.generate(6, (i) => incomeMap[i + 1] ?? 0.0);
+
+            // Get recent finished bookings for this vendor, sorted by dateStarted descending
+            List finishedBookings =
+                bookingProvider.bookings.where((booking) {
+                  return booking.vendor != null &&
+                      booking.vendor!.id == uid &&
+                      booking.status == "finished" &&
+                      booking.dateStarted != null;
+                }).toList();
+
+            finishedBookings.sort(
+              (a, b) => b.dateStarted!.compareTo(a.dateStarted!),
+            );
+
+            final recentRentals = finishedBookings.take(4).toList();
+
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Monthly Earning",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: lightText,
-                      ),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditProfilePage(uid: uid),
+                              ),
+                            );
+                          },
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey[700],
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          "Dashboard",
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: lightText,
+                          ),
+                        ),
+                      ],
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => MonthlyEarningsBreakdownPage(
-                                  vendorUid: uid,
+                    const SizedBox(height: 8),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Monthly Earning",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: lightText,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => MonthlyEarningsBreakdownPage(
+                                      vendorUid: uid,
+                                    ),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "See More",
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: headerBlue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(
+                      height: 180,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 15.0),
+                        child: BarChart(
+                          BarChartData(
+                            alignment: BarChartAlignment.spaceAround,
+                            maxY: _calculateMaxY(monthlyEarnings),
+                            barGroups: List.generate(
+                              6,
+                              (index) => BarChartGroupData(
+                                x: index,
+                                barRods: [
+                                  BarChartRodData(
+                                    toY: monthlyEarnings[index],
+                                    color: headerBlue,
+                                    width: 18,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            titlesData: FlTitlesData(
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  interval: _calculateInterval(monthlyEarnings),
+                                  getTitlesWidget: (value, meta) {
+                                    if ((value %
+                                                _calculateInterval(
+                                                  monthlyEarnings,
+                                                )) ==
+                                            0 &&
+                                        value <=
+                                            _calculateMaxY(monthlyEarnings)) {
+                                      return Text(
+                                        "RM${value.toInt()}",
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: lightText,
+                                        ),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
                                 ),
+                              ),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    const labels = [
+                                      "JAN",
+                                      "FEB",
+                                      "MAR",
+                                      "APR",
+                                      "MAY",
+                                      "JUN",
+                                    ];
+                                    if (value.toInt() < labels.length) {
+                                      return Text(
+                                        labels[value.toInt()],
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: lightText,
+                                        ),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+                              ),
+                              rightTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              topTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                            ),
+                            gridData: FlGridData(
+                              show: true,
+                              horizontalInterval: _calculateInterval(
+                                monthlyEarnings,
+                              ),
+                              drawVerticalLine: false,
+                              getDrawingHorizontalLine:
+                                  (value) => FlLine(
+                                    color: Colors.white12,
+                                    strokeWidth: 1,
+                                  ),
+                            ),
+                            borderData: FlBorderData(show: false),
                           ),
-                        );
-                      },
-                      child: Text(
-                        "See More",
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: headerBlue,
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
+
+                    const SizedBox(height: 10),
+                    Text(
+                      "Recent Rental",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: lightText,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    recentRentals.isEmpty
+                        ? Text(
+                          "No recent rentals",
+                          style: TextStyle(color: subText),
+                        )
+                        : Column(
+                          children:
+                              recentRentals.map((booking) {
+                                final started =
+                                    booking.dateStarted != null
+                                        ? "${booking.dateStarted!.day.toString().padLeft(2, '0')}/"
+                                            "${booking.dateStarted!.month.toString().padLeft(2, '0')}/"
+                                            "${booking.dateStarted!.year}"
+                                        : "No Date";
+                                final priceStr =
+                                    booking.price != null
+                                        ? "RM${booking.price!.toStringAsFixed(2)}"
+                                        : "N/A";
+                                final notes = booking.notes ?? "";
+
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 6,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.car_rental, color: headerBlue),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              priceStr,
+                                              style: TextStyle(
+                                                color: lightText,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            if (notes.isNotEmpty)
+                                              Text(
+                                                notes,
+                                                style: TextStyle(
+                                                  color: subText,
+                                                  fontSize: 12,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(
+                                        started,
+                                        style: TextStyle(
+                                          color: subText,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                        ),
                   ],
                 ),
-
-                SizedBox(
-                  height: 180,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 15.0),
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
-                        maxY: 1000,
-                        barGroups: List.generate(
-                          6,
-                          (index) => BarChartGroupData(
-                            x: index,
-                            barRods: [
-                              BarChartRodData(
-                                toY: monthlyEarnings[index],
-                                color: headerBlue,
-                                width: 18,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ],
-                          ),
-                        ),
-                        titlesData: FlTitlesData(
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              interval: 250,
-                              getTitlesWidget: (value, meta) {
-                                if (value % 250 == 0 && value <= 1000) {
-                                  return Text(
-                                    "RM${value.toInt()}",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: lightText,
-                                    ),
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              },
-                            ),
-                          ),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                const labels = [
-                                  "JAN",
-                                  "FEB",
-                                  "MAR",
-                                  "APR",
-                                  "MAY",
-                                  "JUN",
-                                ];
-                                if (value.toInt() < labels.length) {
-                                  return Text(
-                                    labels[value.toInt()],
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: lightText,
-                                    ),
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              },
-                            ),
-                          ),
-                          rightTitles: AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                          topTitles: AxisTitles(
-                            sideTitles: SideTitles(showTitles: false),
-                          ),
-                        ),
-                        gridData: FlGridData(
-                          show: true,
-                          horizontalInterval: 250,
-                          drawVerticalLine: false,
-                          getDrawingHorizontalLine:
-                              (value) =>
-                                  FlLine(color: Colors.white12, strokeWidth: 1),
-                        ),
-                        borderData: FlBorderData(show: false),
-                      ),
-                    ),
-                  ),
-                ),
-
-                /// Recent Rental Title
-                const SizedBox(height: 10),
-                Text(
-                  "Recent Rental",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: lightText,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                /// Placeholder rental list
-                Column(
-                  children: List.generate(
-                    4,
-                    (i) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 3),
-                      child: Row(
-                        children: [
-                          Icon(Icons.circle_outlined, size: 18, color: subText),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Container(
-                              height: 16,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[800],
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
+  }
+
+  double _calculateMaxY(List<double> earnings) {
+    final max =
+        earnings.isEmpty ? 1000 : earnings.reduce((a, b) => a > b ? a : b);
+    if (max < 1000) return 1000;
+    return (max / 100).ceil() * 100.0;
+  }
+
+  double _calculateInterval(List<double> earnings) {
+    final maxY = _calculateMaxY(earnings);
+    if (maxY <= 1000) return 250;
+    return maxY / 4;
   }
 
   Widget _buildProfile() {
@@ -266,103 +400,6 @@ class _VendorHomePageState extends State<VendorHomePage> {
         child: Text(
           title,
           style: const TextStyle(color: Colors.white, fontSize: 24),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      _buildDashboard(), // index 0
-      _buildPlaceholder('Listing Page'), // index 1
-      _buildPlaceholder('Rental Page'), // index 2
-      _buildProfile(), // index 3 (Profile)
-    ];
-
-    final Color backgroundColor = Colors.grey[900]!;
-    final Color selectedItemColor = const Color.fromARGB(255, 140, 200, 255);
-    final Color unselectedItemColor = Colors.white70;
-
-    return Scaffold(
-      body: pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: backgroundColor,
-        selectedItemColor: selectedItemColor,
-        unselectedItemColor: unselectedItemColor,
-        currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'DASHBOARD',
-          ), // now at leftmost (index 0)
-          BottomNavigationBarItem(
-            icon: Icon(Icons.car_rental),
-            label: 'LISTING',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_returned),
-            label: 'RENTAL',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'PROFILE'),
-        ],
-      ),
-    );
-  }
-}
-
-class _DashboardAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final Widget? extraWidget;
-
-  final Color? backgroundColor;
-  final Color? iconColor;
-  final Color? textColor;
-
-  const _DashboardAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.extraWidget,
-    this.backgroundColor,
-    this.iconColor,
-    this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bgColor = backgroundColor ?? Colors.grey.shade200;
-    final iconCol = iconColor ?? Colors.black87;
-    final txtColor = textColor ?? Colors.black87;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 32, color: iconCol),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: txtColor),
-            ),
-            if (extraWidget != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 5),
-                child: extraWidget,
-              ),
-          ],
         ),
       ),
     );
