@@ -348,6 +348,9 @@ class _CustomerHomePageState extends State<CustomerHomePage>
                     Consumer<ListingProvider>(
                       builder: (context, listingProvider, child) {
                         final listings = listingProvider.listings;
+                        print(
+                          'Rebuilding listings widget, count: ${listingProvider.listings.length}',
+                        );
                         if (listings.isEmpty) {
                           return const SizedBox(
                             height: 207,
