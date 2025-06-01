@@ -181,11 +181,4 @@ class UserProvider extends ChangeNotifier {
       throw Exception('Failed to delete user: $e');
     }
   }
-
-  Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
-    _userModel = null;
-    notifyListeners();
-    onSignedOut?.call();
-  }
 }

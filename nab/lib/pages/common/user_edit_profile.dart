@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:nab/utils/auth_wrapper.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -144,8 +145,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     setState(() => _isSaving = true);
 
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      await userProvider.signOut();
+      final userProvider = AuthWrapper();
+      await userProvider.signOut(context);
 
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed('/login');
