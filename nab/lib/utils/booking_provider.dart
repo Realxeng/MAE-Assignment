@@ -161,6 +161,7 @@ class BookingProvider extends ChangeNotifier {
       'price': 0,
       'status': "pending",
       'vendor': vendorRef,
+      'vendorACK': false,
     };
   }
 
@@ -227,6 +228,57 @@ class BookingProvider extends ChangeNotifier {
             notifyListeners();
           },
         );
+  }
+
+  Future<void> fetchBookingsForVendorUnacknowledged(String vendorUid) async {
+    await _bookingSubscription?.cancel();
+
+    final vendorRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(vendorUid);
+
+    _bookingSubscription = FirebaseFirestore.instance
+        .collection('bookings')
+        .where('vendor', isEqualTo: vendorRef)
+        .where('vendorACK', isEqualTo: false)
+        .snapshots()
+        .listen(
+          (querySnapshot) async {
+            _bookings = await Future.wait(
+              querySnapshot.docs.map(
+                (doc) => BookingModel.fromDocumentAsync(doc),
+              ),
+            );
+            notifyListeners();
+          },
+          onError: (error) {
+            _bookings = [];
+            notifyListeners();
+          },
+        );
+  }
+
+  /// Acknowledge a booking: set status to "ongoing" and vendorACK to true.
+  Future<void> acknowledgeBooking(BookingModel booking) async {
+    if (booking.id == null) {
+      throw Exception("Booking ID is null");
+    }
+
+    final docRef = FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(booking.id);
+
+    await docRef.update({'status': 'ongoing', 'vendorACK': true});
+
+    // Update local cache and notify listeners
+    final index = _bookings.indexWhere((b) => b.id == booking.id);
+    if (index != -1) {
+      _bookings[index] = _bookings[index].copyWith(
+        status: 'ongoing',
+        vendorACK: true,
+      );
+      notifyListeners();
+    }
   }
 
   void clearListings() {

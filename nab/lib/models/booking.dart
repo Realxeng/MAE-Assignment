@@ -13,6 +13,7 @@ class BookingModel {
   ListingModel? car;
   UserModel? customer;
   UserModel? vendor;
+  bool? vendorACK;
 
   BookingModel({
     this.id,
@@ -25,6 +26,7 @@ class BookingModel {
     this.car,
     this.customer,
     this.vendor,
+    this.vendorACK,
   });
 
   factory BookingModel.fromDocument(DocumentSnapshot data) {
@@ -36,10 +38,9 @@ class BookingModel {
       notes: data['notes'],
       price: (data['price'] as num?)?.toDouble(),
       status: data['status'],
+      vendorACK: data['vendorACK'] as bool?,
     );
   }
-
-  get listingId => null;
 
   static Future<BookingModel> fromDocumentAsync(DocumentSnapshot data) async {
     final customerRef = data['customer'];
@@ -74,6 +75,35 @@ class BookingModel {
       car: car,
       customer: customer,
       vendor: vendor,
+      vendorACK: data['vendorACK'] as bool?,
+    );
+  }
+
+  BookingModel copyWith({
+    String? id,
+    DateTime? createdAt,
+    DateTime? dateEnded,
+    DateTime? dateStarted,
+    String? notes,
+    double? price,
+    String? status,
+    ListingModel? car,
+    UserModel? customer,
+    UserModel? vendor,
+    bool? vendorACK,
+  }) {
+    return BookingModel(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      dateEnded: dateEnded ?? this.dateEnded,
+      dateStarted: dateStarted ?? this.dateStarted,
+      notes: notes ?? this.notes,
+      price: price ?? this.price,
+      status: status ?? this.status,
+      car: car ?? this.car,
+      customer: customer ?? this.customer,
+      vendor: vendor ?? this.vendor,
+      vendorACK: vendorACK ?? this.vendorACK,
     );
   }
 }

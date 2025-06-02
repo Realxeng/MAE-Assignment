@@ -3,6 +3,7 @@ import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:nab/utils/listing_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:nab/pages/vendor/vendor_addListing.dart';
 
 class VendorListingPage extends StatefulWidget {
   final String uid;
@@ -27,13 +28,78 @@ class _VendorListingPageState extends State<VendorListingPage>
     final user = userProvider.user;
 
     if (user != null && !_hasFetchedListings) {
-      context.read<ListingProvider>().fetchListingsByVendor(user.id);
+      context.read<ListingProvider>().fetchListingsByVendor(user.uid);
       _hasFetchedListings = true;
     }
   }
 
-  void _openListing(String carPlate) {
-    // TODO: Implement navigation to listing detail or edit page
+  void _openListing(car) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        ImageProvider? imageProvider;
+        try {
+          if (car.image != null && car.image!.isNotEmpty) {
+            imageProvider = MemoryImage(
+              ImageConstants.constants.decodeBase64(car.image!),
+            );
+          }
+        } catch (_) {
+          imageProvider = null;
+        }
+
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: Text(
+            car.carModel ?? 'Unknown Model',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (imageProvider != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image(
+                    image: imageProvider,
+                    width: 220,
+                    height: 140,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              else
+                const Icon(
+                  Icons.directions_car,
+                  size: 80,
+                  color: Colors.white70,
+                ),
+              const SizedBox(height: 12),
+              Text(
+                'Plate: ${car.carPlate ?? 'N/A'}',
+                style: const TextStyle(fontSize: 16, color: Colors.white70),
+              ),
+              // Add any other car details if needed.
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'OK',
+                style: TextStyle(color: Colors.blueAccent),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -96,7 +162,7 @@ class _VendorListingPageState extends State<VendorListingPage>
                 }
 
                 return InkWell(
-                  onTap: () => _openListing(car.carPlate ?? ''),
+                  onTap: () => _openListing(car),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.grey[900],
@@ -175,6 +241,19 @@ class _VendorListingPageState extends State<VendorListingPage>
             );
           },
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: headerColor,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => VendorAddListingPage(uid: widget.uid),
+            ),
+          );
+        },
+        tooltip: 'Add New Listing',
+        child: const Icon(Icons.add),
       ),
     );
   }

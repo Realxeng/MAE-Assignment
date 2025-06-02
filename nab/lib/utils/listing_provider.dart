@@ -46,6 +46,41 @@ class ListingProvider extends ChangeNotifier {
         );
   }
 
+  Future<void> addListing({
+    required String vendorId,
+    required String carModel,
+    required String carPlate,
+    required String carType,
+    required int price,
+    required int contactNumber,
+    required String? imageBase64,
+    required String? attachmentBase64,
+    required String vehicleCondition,
+  }) async {
+    final vendorRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(vendorId);
+
+    final listingData = {
+      'vendor': vendorRef,
+      'carModel': carModel,
+      'carPlate': carPlate.toUpperCase(),
+      'carType': carType.toLowerCase(),
+      'contactNumber': contactNumber,
+      'imageBase64': imageBase64,
+      'attachmentBase64': attachmentBase64,
+      'vehicleCondition': vehicleCondition,
+      'status': 'pending',
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+
+    try {
+      await FirebaseFirestore.instance.collection('listing').add(listingData);
+    } catch (e) {
+      debugPrint('Error adding listing: $e');
+    }
+  }
+
   Future<void> fetchAllListings() async {
     await _listingSubscription?.cancel();
 

@@ -126,7 +126,7 @@ class UserProvider extends ChangeNotifier {
     String? profilePictureBase64;
 
     if (profilePictureFile != null) {
-      profilePictureBase64 = ImageConstants.constants.convertToBase64(
+      profilePictureBase64 = ImageConstants.constants.convertFileToBase64(
         profilePictureFile,
       );
     }

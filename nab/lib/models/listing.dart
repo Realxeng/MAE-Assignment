@@ -24,6 +24,7 @@ class ListingModel {
     this.status,
     this.vehicleCondition,
     this.user,
+    bool? ownerACK,
   });
 
   factory ListingModel.fromDocument(DocumentSnapshot doc) {
@@ -38,6 +39,7 @@ class ListingModel {
       image: data['image'],
       status: data['status'],
       vehicleCondition: data['vehicleCondition'],
+      ownerACK: data['ownerACK'] as bool? ?? false,
     );
   }
 

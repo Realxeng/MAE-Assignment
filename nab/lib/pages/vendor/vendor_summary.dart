@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nab/pages/common/user_edit_profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nab/pages/vendor/vendor_listing.dart';
+import 'package:nab/pages/vendor/vendor_rental.dart';
 import 'package:nab/utils/image_provider.dart';
 import 'package:nab/utils/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -236,6 +238,8 @@ class _VendorNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = context.read<UserProvider>();
+    final uid = userProvider.user?.uid;
     return Container(
       height: 62,
       decoration: BoxDecoration(
@@ -254,17 +258,56 @@ class _VendorNavBar extends StatelessWidget {
           NavBarItem(
             icon: Icons.list_alt,
             label: "Listings",
-            onTap: () => onTabChange?.call(1),
+            onTap: () {
+              if (uid != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VendorListingPage(uid: uid),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("User ID is not available.")),
+                );
+              }
+            },
           ),
           NavBarItem(
             icon: Icons.directions_car,
             label: "Rentals",
-            onTap: () => onTabChange?.call(2),
+            onTap: () {
+              if (uid != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VendorBookingPage(vendorUid: uid),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("User ID is not available.")),
+                );
+              }
+            },
           ),
           NavBarItem(
             icon: Icons.person,
             label: "Profile",
-            onTap: () => onTabChange?.call(3),
+            onTap: () {
+              if (uid != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditProfilePage(uid: uid),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("User ID is not available.")),
+                );
+              }
+            },
           ),
         ],
       ),
