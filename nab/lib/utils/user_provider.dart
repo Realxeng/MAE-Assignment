@@ -160,13 +160,15 @@ class UserProvider extends ChangeNotifier {
 
     await fetchUserData(userId);
 
+    final userData = user;
+
     try {
       // Delete Firebase Authentication user
       await currentUser.delete();
 
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(user?.id)
+          .doc(userData?.id)
           .delete();
 
       // Clear local user model and notify listeners
